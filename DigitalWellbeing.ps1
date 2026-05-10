@@ -142,7 +142,8 @@ try {
             public static extern bool RegisterHotKey(IntPtr hWnd, int id, uint fsModifiers, uint vk);
             [DllImport("user32.dll")]
             public static extern bool UnregisterHotKey(IntPtr hWnd, int id);
-            public const uint MOD_WIN = 0x0008;
+            public const uint MOD_CONTROL = 0x0002;
+            public const uint MOD_SHIFT = 0x0004;
             public const uint MOD_NOREPEAT = 0x4000;
             public const uint VK_D = 0x44;
             public const int HOTKEY_ID = 9000;
@@ -2761,7 +2762,7 @@ Update-Dashboard
 # Initialize system tray icon
 Initialize-TrayIcon
 
-# ── Global Hotkey: Win+D to bring app to foreground ──
+# ── Global Hotkey: Ctrl+Shift+D to bring app to foreground ──
 $script:HotkeyRegistered = $false
 
 $window.Add_SourceInitialized({
@@ -2769,8 +2770,8 @@ $window.Add_SourceInitialized({
         $helper = [System.Windows.Interop.WindowInteropHelper]::new($window)
         $hwnd = $helper.Handle
 
-        # Register Win+D hotkey (MOD_WIN | MOD_NOREPEAT)
-        $modifiers = [HotKeyHelper]::MOD_WIN -bor [HotKeyHelper]::MOD_NOREPEAT
+        # Register Ctrl+Shift+D hotkey
+        $modifiers = [HotKeyHelper]::MOD_CONTROL -bor [HotKeyHelper]::MOD_SHIFT -bor [HotKeyHelper]::MOD_NOREPEAT
         $result = [HotKeyHelper]::RegisterHotKey($hwnd, [HotKeyHelper]::HOTKEY_ID, $modifiers, [HotKeyHelper]::VK_D)
         if ($result) {
             $script:HotkeyRegistered = $true
@@ -2800,7 +2801,7 @@ if ($Background) {
     $window.WindowState = 'Minimized'
     $window.ShowInTaskbar = $false
     $script:TrayIcon.Visible = $true
-    $script:TrayIcon.ShowBalloonTip(3000, "Digital Wellbeing", "Running in background. Press Win+D to open, or double-click tray icon.", [System.Windows.Forms.ToolTipIcon]::Info)
+    $script:TrayIcon.ShowBalloonTip(3000, "Digital Wellbeing", "Running in background. Press Ctrl+Shift+D to open, or double-click tray icon.", [System.Windows.Forms.ToolTipIcon]::Info)
     $window.Hide()
 }
 
