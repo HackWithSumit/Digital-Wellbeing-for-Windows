@@ -656,6 +656,127 @@ $script:KnownAppNames = @{
     "AndroidStudio64"   = "Android Studio"
 }
 
+# ── App Category Mapping (friendly name → category) ──
+$script:AppCategories = @{
+    "Google Chrome"        = "Browsers"
+    "Microsoft Edge"       = "Browsers"
+    "Mozilla Firefox"      = "Browsers"
+    "Brave Browser"        = "Browsers"
+    "Opera Browser"        = "Browsers"
+    "Internet Explorer"    = "Browsers"
+    "Microsoft Word"       = "Productivity"
+    "Microsoft Excel"      = "Productivity"
+    "Microsoft PowerPoint" = "Productivity"
+    "Microsoft OneNote"    = "Productivity"
+    "Microsoft Outlook"    = "Productivity"
+    "Notion"               = "Productivity"
+    "Obsidian"             = "Productivity"
+    "Todoist"              = "Productivity"
+    "Trello"               = "Productivity"
+    "Adobe Acrobat"        = "Productivity"
+    "Adobe Reader"         = "Productivity"
+    "Notepad"              = "Productivity"
+    "Notepad++"            = "Productivity"
+    "Calculator"           = "Productivity"
+    "Visual Studio Code"   = "Development"
+    "Visual Studio"        = "Development"
+    "IntelliJ IDEA"        = "Development"
+    "PyCharm"              = "Development"
+    "WebStorm"             = "Development"
+    "Rider"                = "Development"
+    "Sublime Text"         = "Development"
+    "Atom"                 = "Development"
+    "Android Studio"       = "Development"
+    "Postman"              = "Development"
+    "GitHub Desktop"       = "Development"
+    "FileZilla"            = "Development"
+    "PuTTY"                = "Development"
+    "Windows Terminal"     = "Development"
+    "PowerShell"           = "Development"
+    "Command Prompt"       = "Development"
+    "Git Bash"             = "Development"
+    "ConEmu"               = "Development"
+    "Hyper Terminal"       = "Development"
+    "Microsoft Teams"      = "Communication"
+    "Discord"              = "Communication"
+    "Slack"                = "Communication"
+    "Telegram"             = "Communication"
+    "WhatsApp"             = "Communication"
+    "Zoom"                 = "Communication"
+    "Skype"                = "Communication"
+    "Thunderbird"          = "Communication"
+    "Phone Link"           = "Communication"
+    "Spotify"              = "Media"
+    "VLC Media Player"     = "Media"
+    "Windows Media Player" = "Media"
+    "Movies & TV"          = "Media"
+    "Photos"               = "Media"
+    "OBS Studio"           = "Media"
+    "Adobe Photoshop"      = "Creative"
+    "Adobe Illustrator"    = "Creative"
+    "Adobe After Effects"  = "Creative"
+    "Adobe Premiere Pro"   = "Creative"
+    "GIMP"                 = "Creative"
+    "Figma"                = "Creative"
+    "Blender"              = "Creative"
+    "Paint"                = "Creative"
+    "Steam"                = "Gaming"
+    "Epic Games Launcher"  = "Gaming"
+    "Xbox Game Bar"        = "Gaming"
+    "Xbox"                 = "Gaming"
+    "Unity Editor"         = "Gaming"
+    "Unreal Engine"        = "Gaming"
+    "File Explorer"        = "System"
+    "Task Manager"         = "System"
+    "Settings"             = "System"
+    "Control Panel"        = "System"
+    "Management Console"   = "System"
+    "Registry Editor"      = "System"
+    "Microsoft Store"      = "System"
+    "Windows Search"       = "System"
+    "Widgets"              = "System"
+    "UWP App Host"         = "System"
+    "Snipping Tool"        = "Utilities"
+    "Snip & Sketch"        = "Utilities"
+    "WinRAR"               = "Utilities"
+    "7-Zip"                = "Utilities"
+    "ZoomIt"               = "Utilities"
+}
+
+$script:CategoryIcons = @{
+    "Browsers"      = [char]0xE774
+    "Productivity"  = [char]0xE8A5
+    "Development"   = [char]0xE943
+    "Communication" = [char]0xE8BD
+    "Media"         = [char]0xE8D6
+    "Creative"      = [char]0xEA86
+    "Gaming"        = [char]0xE7FC
+    "System"        = [char]0xE770
+    "Utilities"     = [char]0xE713
+    "Other"         = [char]0xE71D
+}
+
+$script:CategoryColors = @{
+    "Browsers"      = "#6C63FF"
+    "Productivity"  = "#00C853"
+    "Development"   = "#03DAC5"
+    "Communication" = "#FFB300"
+    "Media"         = "#FF6584"
+    "Creative"      = "#E040FB"
+    "Gaming"        = "#FF5722"
+    "System"        = "#607D8B"
+    "Utilities"     = "#8892B0"
+    "Other"         = "#5A6078"
+}
+
+function Get-AppCategory {
+    param([string]$AppName)
+    if ($script:AppCategories.ContainsKey($AppName)) {
+        return $script:AppCategories[$AppName]
+    }
+    return "Other"
+}
+
 function Get-FriendlyAppName {
     param([string]$ProcessName, [int]$ProcessId = 0)
 
@@ -1230,6 +1351,19 @@ function Get-AppIcon {
                                         </StackPanel>
                                     </Border>
                                 </Grid>
+
+                                <!-- Most Used by Category -->
+                                <Border Style="{StaticResource CardStyle}">
+                                    <StackPanel>
+                                        <TextBlock Text="Most Used by Category" FontSize="15" FontFamily="Segoe UI Semibold"
+                                                   Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,16"/>
+                                        <StackPanel Name="DashCategoryPanel">
+                                            <TextBlock Text="Collecting category data..."
+                                                       Foreground="{StaticResource TextSecondaryBrush}"
+                                                       FontSize="12" FontStyle="Italic"/>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Border>
 
                                 <!-- Recent Activity -->
                                 <Border Style="{StaticResource CardStyle}">
@@ -1966,6 +2100,9 @@ function Update-Dashboard {
     # Usage Breakdown Chart
     Draw-UsageBreakdownChart
 
+    # Category Breakdown
+    Update-CategoryBreakdown
+
     # Running Apps
     Update-RunningApps
 }
@@ -2131,6 +2268,165 @@ function Update-RunningApps {
         $noApps.FontStyle = 'Italic'
         $DashRunningApps.Children.Add($noApps)
     }
+}
+
+function Update-CategoryBreakdown {
+    $DashCategoryPanel.Children.Clear()
+
+    if (-not $script:CurrentAppUsage -or $script:CurrentAppUsage.Count -eq 0) {
+        $noData = New-Object System.Windows.Controls.TextBlock
+        $noData.Text = "No usage data yet - categories will appear as you use apps"
+        $noData.Foreground = $window.FindResource("TextSecondaryBrush")
+        $noData.FontSize = 12
+        $noData.FontStyle = 'Italic'
+        $DashCategoryPanel.Children.Add($noData)
+        return
+    }
+
+    # Aggregate usage by category
+    $categoryUsage = @{}
+    $categoryApps = @{}
+    foreach ($entry in $script:CurrentAppUsage.GetEnumerator()) {
+        $cat = Get-AppCategory $entry.Key
+        if (-not $categoryUsage.ContainsKey($cat)) {
+            $categoryUsage[$cat] = 0
+            $categoryApps[$cat] = @()
+        }
+        $categoryUsage[$cat] += $entry.Value
+        $categoryApps[$cat] += @(@{ Name = $entry.Key; Time = $entry.Value })
+    }
+
+    $sortedCats = $categoryUsage.GetEnumerator() | Sort-Object Value -Descending
+    $maxUsage = ($sortedCats | Measure-Object -Property Value -Maximum).Maximum
+    if (-not $maxUsage) { $maxUsage = 1 }
+    $totalUsage = ($sortedCats | Measure-Object -Property Value -Sum).Sum
+    if (-not $totalUsage) { $totalUsage = 1 }
+
+    # Category grid layout
+    $wrapPanel = New-Object System.Windows.Controls.WrapPanel
+    $wrapPanel.Orientation = 'Horizontal'
+
+    foreach ($cat in $sortedCats) {
+        $catName = $cat.Key
+        $catSeconds = $cat.Value
+        $pct = [math]::Round(($catSeconds / $totalUsage) * 100)
+
+        $catBorder = New-Object System.Windows.Controls.Border
+        $catBorder.Background = $window.FindResource("BgSecondaryBrush")
+        $catBorder.CornerRadius = [System.Windows.CornerRadius]::new(10)
+        $catBorder.Padding = [System.Windows.Thickness]::new(16, 14, 16, 14)
+        $catBorder.Margin = [System.Windows.Thickness]::new(0, 0, 10, 10)
+        $catBorder.Width = 280
+
+        $sp = New-Object System.Windows.Controls.StackPanel
+
+        # Header row: icon + category name + percentage
+        $headerGrid = New-Object System.Windows.Controls.Grid
+        $hCol1 = New-Object System.Windows.Controls.ColumnDefinition
+        $hCol1.Width = [System.Windows.GridLength]::new(1, [System.Windows.GridUnitType]::Star)
+        $hCol2 = New-Object System.Windows.Controls.ColumnDefinition
+        $hCol2.Width = [System.Windows.GridLength]::new(60)
+        $headerGrid.ColumnDefinitions.Add($hCol1)
+        $headerGrid.ColumnDefinitions.Add($hCol2)
+
+        $headerSp = New-Object System.Windows.Controls.StackPanel
+        $headerSp.Orientation = 'Horizontal'
+
+        $catIcon = New-Object System.Windows.Controls.TextBlock
+        $iconChar = if ($script:CategoryIcons.ContainsKey($catName)) { $script:CategoryIcons[$catName] } else { [char]0xE71D }
+        $catIcon.Text = [string]$iconChar
+        $catIcon.FontFamily = New-Object System.Windows.Media.FontFamily("Segoe MDL2 Assets")
+        $catIcon.FontSize = 18
+        $catColor = if ($script:CategoryColors.ContainsKey($catName)) { $script:CategoryColors[$catName] } else { "#8892B0" }
+        $catIcon.Foreground = [System.Windows.Media.BrushConverter]::new().ConvertFrom($catColor)
+        $catIcon.VerticalAlignment = 'Center'
+        $catIcon.Margin = [System.Windows.Thickness]::new(0, 0, 10, 0)
+        $headerSp.Children.Add($catIcon)
+
+        $catTitle = New-Object System.Windows.Controls.TextBlock
+        $catTitle.Text = $catName
+        $catTitle.FontSize = 14
+        $catTitle.FontFamily = New-Object System.Windows.Media.FontFamily("Segoe UI Semibold")
+        $catTitle.Foreground = $window.FindResource("TextPrimaryBrush")
+        $catTitle.VerticalAlignment = 'Center'
+        $headerSp.Children.Add($catTitle)
+
+        [System.Windows.Controls.Grid]::SetColumn($headerSp, 0)
+        $headerGrid.Children.Add($headerSp)
+
+        $pctText = New-Object System.Windows.Controls.TextBlock
+        $pctText.Text = "${pct}%"
+        $pctText.FontSize = 14
+        $pctText.FontFamily = New-Object System.Windows.Media.FontFamily("Segoe UI Semibold")
+        $pctText.Foreground = [System.Windows.Media.BrushConverter]::new().ConvertFrom($catColor)
+        $pctText.HorizontalAlignment = 'Right'
+        $pctText.VerticalAlignment = 'Center'
+        [System.Windows.Controls.Grid]::SetColumn($pctText, 1)
+        $headerGrid.Children.Add($pctText)
+
+        $sp.Children.Add($headerGrid)
+
+        # Time text
+        $timeText = New-Object System.Windows.Controls.TextBlock
+        $timeText.Text = Format-Duration $catSeconds
+        $timeText.FontSize = 12
+        $timeText.Foreground = $window.FindResource("TextSecondaryBrush")
+        $timeText.Margin = [System.Windows.Thickness]::new(28, 2, 0, 6)
+        $sp.Children.Add($timeText)
+
+        # Progress bar
+        $progressBg = New-Object System.Windows.Controls.Border
+        $progressBg.Background = $window.FindResource("CardBrush")
+        $progressBg.CornerRadius = [System.Windows.CornerRadius]::new(4)
+        $progressBg.Height = 6
+        $progressBg.Margin = [System.Windows.Thickness]::new(0, 0, 0, 8)
+
+        $progressFill = New-Object System.Windows.Controls.Border
+        $progressFill.CornerRadius = [System.Windows.CornerRadius]::new(4)
+        $progressFill.Height = 6
+        $progressFill.HorizontalAlignment = 'Left'
+        $barPct = [math]::Min(($catSeconds / $maxUsage), 1)
+        $progressFill.Width = [math]::Max($barPct * 248, 2)
+        $progressFill.Background = [System.Windows.Media.BrushConverter]::new().ConvertFrom($catColor)
+        $progressBg.Child = $progressFill
+        $sp.Children.Add($progressBg)
+
+        # Top apps in this category
+        $topApps = $categoryApps[$catName] | Sort-Object { $_.Time } -Descending | Select-Object -First 3
+        foreach ($topApp in $topApps) {
+            $appRow = New-Object System.Windows.Controls.Grid
+            $aCol1 = New-Object System.Windows.Controls.ColumnDefinition
+            $aCol1.Width = [System.Windows.GridLength]::new(1, [System.Windows.GridUnitType]::Star)
+            $aCol2 = New-Object System.Windows.Controls.ColumnDefinition
+            $aCol2.Width = [System.Windows.GridLength]::new(70)
+            $appRow.ColumnDefinitions.Add($aCol1)
+            $appRow.ColumnDefinitions.Add($aCol2)
+
+            $appNameTb = New-Object System.Windows.Controls.TextBlock
+            $appNameTb.Text = $topApp.Name
+            $appNameTb.FontSize = 11
+            $appNameTb.Foreground = $window.FindResource("TextSecondaryBrush")
+            $appNameTb.TextTrimming = 'CharacterEllipsis'
+            $appNameTb.Margin = [System.Windows.Thickness]::new(28, 0, 0, 2)
+            [System.Windows.Controls.Grid]::SetColumn($appNameTb, 0)
+            $appRow.Children.Add($appNameTb)
+
+            $appTimeTb = New-Object System.Windows.Controls.TextBlock
+            $appTimeTb.Text = Format-Duration $topApp.Time
+            $appTimeTb.FontSize = 11
+            $appTimeTb.Foreground = $window.FindResource("TextSecondaryBrush")
+            $appTimeTb.HorizontalAlignment = 'Right'
+            [System.Windows.Controls.Grid]::SetColumn($appTimeTb, 1)
+            $appRow.Children.Add($appTimeTb)
+
+            $sp.Children.Add($appRow)
+        }
+
+        $catBorder.Child = $sp
+        $wrapPanel.Children.Add($catBorder)
+    }
+
+    $DashCategoryPanel.Children.Add($wrapPanel)
 }
 
 # ── App Usage Page ──
