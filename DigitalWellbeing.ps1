@@ -25,7 +25,8 @@ param(
 )
 
 # ── Hide Console/PowerShell Window (from screen and taskbar) ──
-Add-Type -Name ConsoleWindow -Namespace Win32Helper -MemberDefinition @"
+try {
+    Add-Type -Name ConsoleWindow -Namespace Win32Helper -MemberDefinition @"
     [DllImport("kernel32.dll")]
     public static extern IntPtr GetConsoleWindow();
     [DllImport("user32.dll")]
@@ -38,16 +39,15 @@ Add-Type -Name ConsoleWindow -Namespace Win32Helper -MemberDefinition @"
     public const int WS_EX_TOOLWINDOW = 0x00000080;
     public const int WS_EX_APPWINDOW = 0x00040000;
 "@ -ErrorAction SilentlyContinue
+} catch { }
 try {
     $consoleHwnd = [Win32Helper.ConsoleWindow]::GetConsoleWindow()
     if ($consoleHwnd -ne [IntPtr]::Zero) {
-        # Hide from taskbar by removing WS_EX_APPWINDOW and adding WS_EX_TOOLWINDOW
         $exStyle = [Win32Helper.ConsoleWindow]::GetWindowLong($consoleHwnd, [Win32Helper.ConsoleWindow]::GWL_EXSTYLE)
         $exStyle = $exStyle -band (-bnot [Win32Helper.ConsoleWindow]::WS_EX_APPWINDOW)
         $exStyle = $exStyle -bor [Win32Helper.ConsoleWindow]::WS_EX_TOOLWINDOW
         [Win32Helper.ConsoleWindow]::SetWindowLong($consoleHwnd, [Win32Helper.ConsoleWindow]::GWL_EXSTYLE, $exStyle) | Out-Null
-        # Hide the window completely
-        [Win32Helper.ConsoleWindow]::ShowWindow($consoleHwnd, 0) | Out-Null  # SW_HIDE = 0
+        [Win32Helper.ConsoleWindow]::ShowWindow($consoleHwnd, 0) | Out-Null
     }
 } catch { }
 
@@ -567,7 +567,6 @@ $script:KnownAppNames = @{
     "Premiere Pro"      = "Adobe Premiere Pro"
     "GIMP"              = "GIMP"
     "OBS64"             = "OBS Studio"
-    "obs64"             = "OBS Studio"
     "Zoom"              = "Zoom"
     "ZoomIt"            = "ZoomIt"
     "Skype"             = "Skype"
