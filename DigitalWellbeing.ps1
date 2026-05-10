@@ -72,7 +72,7 @@ function Initialize-TrayIcon {
     $script:TrayIcon = New-Object System.Windows.Forms.NotifyIcon
     $script:TrayIcon.Text = "Digital Wellbeing"
     $script:TrayIcon.Icon = [System.Drawing.SystemIcons]::Application
-    $script:TrayIcon.Visible = $false
+    $script:TrayIcon.Visible = $true
 
     # Context menu
     $trayMenu = New-Object System.Windows.Forms.ContextMenuStrip
@@ -82,9 +82,9 @@ function Initialize-TrayIcon {
     $showItem.Font = New-Object System.Drawing.Font($showItem.Font, [System.Drawing.FontStyle]::Bold)
     $showItem.Add_Click({
         $window.Show()
+        $window.ShowInTaskbar = $true
         $window.WindowState = 'Normal'
         $window.Activate()
-        $script:TrayIcon.Visible = $false
     })
     $trayMenu.Items.Add($showItem) | Out-Null
 
@@ -112,12 +112,12 @@ function Initialize-TrayIcon {
 
     $script:TrayIcon.ContextMenuStrip = $trayMenu
 
-    # Double-click tray icon to show window
-    $script:TrayIcon.Add_DoubleClick({
+    # Single-click tray icon to show window
+    $script:TrayIcon.Add_Click({
         $window.Show()
+        $window.ShowInTaskbar = $true
         $window.WindowState = 'Normal'
         $window.Activate()
-        $script:TrayIcon.Visible = $false
     })
 }
 
@@ -1239,9 +1239,14 @@ function Get-AppIcon {
                                                                Foreground="{StaticResource DangerBrush}" Margin="0,6,0,0"/>
                                                 </StackPanel>
                                             </Border>
-                                            <Button Name="ChangePinBtn" Style="{StaticResource ModernButton}"
-                                                    Content="Change PIN" Margin="0,10,0,0" HorizontalAlignment="Left"
-                                                    Visibility="Collapsed"/>
+                                            <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+                                                <Button Name="ChangePinBtn" Style="{StaticResource ModernButton}"
+                                                        Content="Change PIN" Margin="0,0,8,0"
+                                                        Visibility="Collapsed"/>
+                                                <Button Name="ResetPinBtn" Style="{StaticResource DangerButton}"
+                                                        Content="Reset PIN"
+                                                        Visibility="Collapsed"/>
+                                            </StackPanel>
                                         </StackPanel>
                                     </Border>
 
@@ -1495,8 +1500,7 @@ $MaxBtn.Add_Click({
 $CloseBtn.Add_Click({
     if ($script:Config.MinimizeToTray -and -not $script:ForceClose) {
         $window.Hide()
-        $script:TrayIcon.Visible = $true
-        $script:TrayIcon.ShowBalloonTip(3000, "Digital Wellbeing", "Running in background. Double-click tray icon to open.", [System.Windows.Forms.ToolTipIcon]::Info)
+        $script:TrayIcon.ShowBalloonTip(3000, "Digital Wellbeing", "Running in background. Click tray icon to open.", [System.Windows.Forms.ToolTipIcon]::Info)
     } else {
         $script:ForceClose = $true
         if ($script:TrayIcon) {
@@ -1515,7 +1519,6 @@ $window.Add_Closing({
     if ($script:Config.MinimizeToTray -and -not $script:ForceClose) {
         $e.Cancel = $true
         $window.Hide()
-        $script:TrayIcon.Visible = $true
     }
 })
 
@@ -2374,19 +2377,22 @@ $SetPinBtn.Add_Click({
         $PinStatusText.Text = "PIN has been set successfully"
         $PinStatusText.Foreground = $window.FindResource("SuccessBrush")
         $ChangePinBtn.Visibility = 'Visible'
+        $ResetPinBtn.Visibility = 'Visible'
     } else {
         [System.Windows.MessageBox]::Show("PIN must be 4-6 digits.", "Invalid PIN", 'OK', 'Warning')
     }
 })
 
-# Show Change PIN button if PIN is already set
+# Show Change/Reset PIN buttons if PIN is already set
 if ($script:ParentalConfig.PinHash) {
     $ChangePinBtn.Visibility = 'Visible'
+    $ResetPinBtn.Visibility = 'Visible'
 }
 
 $ChangePinBtn.Add_Click({
     $ChangePinSection.Visibility = 'Visible'
     $ChangePinBtn.Visibility = 'Collapsed'
+    $ResetPinBtn.Visibility = 'Collapsed'
     $OldPinBox.Password = ""
     $NewPinBox.Password = ""
     $ConfirmPinBox.Password = ""
@@ -2396,6 +2402,7 @@ $ChangePinBtn.Add_Click({
 $CancelChangePinBtn.Add_Click({
     $ChangePinSection.Visibility = 'Collapsed'
     $ChangePinBtn.Visibility = 'Visible'
+    $ResetPinBtn.Visibility = 'Visible'
     $OldPinBox.Password = ""
     $NewPinBox.Password = ""
     $ConfirmPinBox.Password = ""
@@ -2437,9 +2444,30 @@ $SaveNewPinBtn.Add_Click({
     $ChangePinErrorText.Text = ""
     $ChangePinSection.Visibility = 'Collapsed'
     $ChangePinBtn.Visibility = 'Visible'
+    $ResetPinBtn.Visibility = 'Visible'
     $PinStatusText.Text = "PIN changed successfully"
     $PinStatusText.Foreground = $window.FindResource("SuccessBrush")
     [System.Windows.MessageBox]::Show("PIN has been changed successfully.", "PIN Changed", 'OK', 'Information')
+})
+
+# Reset PIN handler
+$ResetPinBtn.Add_Click({
+    $result = [System.Windows.MessageBox]::Show(
+        "Are you sure you want to reset the PIN? This will remove PIN protection from Parental Controls.",
+        "Reset PIN",
+        'YesNo',
+        'Warning'
+    )
+    if ($result -eq 'Yes') {
+        $script:ParentalConfig.PinHash = ""
+        Save-JsonData -Path $ParentalFile -Data $script:ParentalConfig
+        $ChangePinBtn.Visibility = 'Collapsed'
+        $ResetPinBtn.Visibility = 'Collapsed'
+        $ChangePinSection.Visibility = 'Collapsed'
+        $PinStatusText.Text = "PIN has been reset - parental controls are not protected"
+        $PinStatusText.Foreground = $window.FindResource("WarningBrush")
+        [System.Windows.MessageBox]::Show("PIN has been reset successfully.", "PIN Reset", 'OK', 'Information')
+    }
 })
 
 $ParentalEnabledToggle.Add_Checked({
@@ -2739,7 +2767,7 @@ $script:TrackingTimer.Add_Tick({
         $TrackingDetailText.Text = "Monitoring $appCount apps"
 
         # Update tray icon tooltip
-        if ($script:TrayIcon -and $script:TrayIcon.Visible) {
+        if ($script:TrayIcon) {
             $script:TrayIcon.Text = "Digital Wellbeing - ${hours}h ${mins}m"
             if ($script:TrayStatusItem) {
                 $script:TrayStatusItem.Text = "Screen Time: ${hours}h ${mins}m"
@@ -2780,7 +2808,6 @@ $script:HotkeyTimer.Add_Tick({
             $window.Activate()
             $window.Topmost = $true
             $window.Topmost = $false
-            if ($script:TrayIcon) { $script:TrayIcon.Visible = $false }
         }
         $script:HotkeyWasPressed = $pressed
     } catch { }
@@ -2791,8 +2818,7 @@ $script:HotkeyTimer.Start()
 if ($Background) {
     $window.WindowState = 'Minimized'
     $window.ShowInTaskbar = $false
-    $script:TrayIcon.Visible = $true
-    $script:TrayIcon.ShowBalloonTip(3000, "Digital Wellbeing", "Running in background. Press Ctrl+Shift+D to open, or double-click tray icon.", [System.Windows.Forms.ToolTipIcon]::Info)
+    $script:TrayIcon.ShowBalloonTip(3000, "Digital Wellbeing", "Running in background. Click tray icon or press Ctrl+Shift+D to open.", [System.Windows.Forms.ToolTipIcon]::Info)
     $window.Hide()
 }
 
