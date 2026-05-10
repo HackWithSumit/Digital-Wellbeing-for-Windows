@@ -20,7 +20,8 @@
 
 param(
     [switch]$ResetData,
-    [switch]$RunAsAdmin
+    [switch]$RunAsAdmin,
+    [switch]$Background
 )
 
 # ── Elevate to Administrator if needed ──
@@ -34,6 +35,93 @@ Add-Type -AssemblyName PresentationCore
 Add-Type -AssemblyName WindowsBase
 Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
+
+# ══════════════════════════════════════════════════════════════════════
+# WINDOWS STARTUP & SYSTEM TRAY
+# ══════════════════════════════════════════════════════════════════════
+
+$script:StartupRegPath = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Run"
+$script:StartupRegName = "DigitalWellbeing"
+$script:TrayIcon = $null
+
+function Get-StartupCommand {
+    $scriptPath = $PSCommandPath
+    return "powershell.exe -ExecutionPolicy Bypass -WindowStyle Hidden -File `"$scriptPath`" -Background"
+}
+
+function Set-WindowsStartup {
+    param([bool]$Enable)
+    try {
+        if ($Enable) {
+            $cmd = Get-StartupCommand
+            Set-ItemProperty -Path $script:StartupRegPath -Name $script:StartupRegName -Value $cmd -Force
+        } else {
+            Remove-ItemProperty -Path $script:StartupRegPath -Name $script:StartupRegName -ErrorAction SilentlyContinue
+        }
+    } catch { }
+}
+
+function Test-WindowsStartup {
+    try {
+        $val = Get-ItemProperty -Path $script:StartupRegPath -Name $script:StartupRegName -ErrorAction SilentlyContinue
+        return ($null -ne $val)
+    } catch { return $false }
+}
+
+function Initialize-TrayIcon {
+    $script:TrayIcon = New-Object System.Windows.Forms.NotifyIcon
+    $script:TrayIcon.Text = "Digital Wellbeing"
+    $script:TrayIcon.Icon = [System.Drawing.SystemIcons]::Application
+    $script:TrayIcon.Visible = $false
+
+    # Context menu
+    $trayMenu = New-Object System.Windows.Forms.ContextMenuStrip
+
+    $showItem = New-Object System.Windows.Forms.ToolStripMenuItem
+    $showItem.Text = "Show Digital Wellbeing"
+    $showItem.Font = New-Object System.Drawing.Font($showItem.Font, [System.Drawing.FontStyle]::Bold)
+    $showItem.Add_Click({
+        $window.Show()
+        $window.WindowState = 'Normal'
+        $window.Activate()
+        $script:TrayIcon.Visible = $false
+    })
+    $trayMenu.Items.Add($showItem) | Out-Null
+
+    $trayMenu.Items.Add((New-Object System.Windows.Forms.ToolStripSeparator)) | Out-Null
+
+    $statusItem = New-Object System.Windows.Forms.ToolStripMenuItem
+    $statusItem.Text = "Tracking: Active"
+    $statusItem.Enabled = $false
+    $trayMenu.Items.Add($statusItem) | Out-Null
+    $script:TrayStatusItem = $statusItem
+
+    $trayMenu.Items.Add((New-Object System.Windows.Forms.ToolStripSeparator)) | Out-Null
+
+    $exitItem = New-Object System.Windows.Forms.ToolStripMenuItem
+    $exitItem.Text = "Exit"
+    $exitItem.Add_Click({
+        $script:ForceClose = $true
+        $script:TrayIcon.Visible = $false
+        $script:TrayIcon.Dispose()
+        Save-JsonData -Path $DataFile -Data $script:UsageData
+        Save-JsonData -Path $ConfigFile -Data $script:Config
+        $window.Close()
+    })
+    $trayMenu.Items.Add($exitItem) | Out-Null
+
+    $script:TrayIcon.ContextMenuStrip = $trayMenu
+
+    # Double-click tray icon to show window
+    $script:TrayIcon.Add_DoubleClick({
+        $window.Show()
+        $window.WindowState = 'Normal'
+        $window.Activate()
+        $script:TrayIcon.Visible = $false
+    })
+}
+
+$script:ForceClose = $false
 
 # ── Win32 API for Foreground Window Detection ──
 try {
@@ -1219,6 +1307,16 @@ function Get-AppIcon {
                                             <CheckBox Name="TrayToggle" Style="{StaticResource ToggleSwitch}"
                                                       HorizontalAlignment="Right" VerticalAlignment="Center"/>
                                         </Grid>
+                                        <Grid Margin="0,0,0,12">
+                                            <StackPanel>
+                                                <TextBlock Text="Start with Windows" FontSize="13"
+                                                           Foreground="{StaticResource TextPrimaryBrush}"/>
+                                                <TextBlock Text="Auto-start and run in background on Windows login"
+                                                           FontSize="11" Foreground="{StaticResource TextSecondaryBrush}"/>
+                                            </StackPanel>
+                                            <CheckBox Name="StartupToggle" Style="{StaticResource ToggleSwitch}"
+                                                      HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                        </Grid>
                                     </StackPanel>
                                 </Border>
 
@@ -1340,9 +1438,30 @@ $MaxBtn.Add_Click({
     }
 })
 $CloseBtn.Add_Click({
-    Save-JsonData -Path $DataFile -Data $script:UsageData
-    Save-JsonData -Path $ConfigFile -Data $script:Config
-    $window.Close()
+    if ($script:Config.MinimizeToTray -and -not $script:ForceClose) {
+        $window.Hide()
+        $script:TrayIcon.Visible = $true
+        $script:TrayIcon.ShowBalloonTip(3000, "Digital Wellbeing", "Running in background. Double-click tray icon to open.", [System.Windows.Forms.ToolTipIcon]::Info)
+    } else {
+        $script:ForceClose = $true
+        if ($script:TrayIcon) {
+            $script:TrayIcon.Visible = $false
+            $script:TrayIcon.Dispose()
+        }
+        Save-JsonData -Path $DataFile -Data $script:UsageData
+        Save-JsonData -Path $ConfigFile -Data $script:Config
+        $window.Close()
+    }
+})
+
+# Intercept window closing to minimize to tray
+$window.Add_Closing({
+    param($sender, $e)
+    if ($script:Config.MinimizeToTray -and -not $script:ForceClose) {
+        $e.Cancel = $true
+        $window.Hide()
+        $script:TrayIcon.Visible = $true
+    }
 })
 
 # ── Navigation ──
@@ -2419,6 +2538,19 @@ $TrayToggle.Add_Unchecked({
     Save-JsonData -Path $ConfigFile -Data $script:Config
 })
 
+# Start with Windows toggle
+$StartupToggle.IsChecked = Test-WindowsStartup
+$StartupToggle.Add_Checked({
+    $script:Config.StartWithWindows = $true
+    Set-WindowsStartup -Enable $true
+    Save-JsonData -Path $ConfigFile -Data $script:Config
+})
+$StartupToggle.Add_Unchecked({
+    $script:Config.StartWithWindows = $false
+    Set-WindowsStartup -Enable $false
+    Save-JsonData -Path $ConfigFile -Data $script:Config
+})
+
 $ExportDataBtn.Add_Click({
     $saveDialog = New-Object Microsoft.Win32.SaveFileDialog
     $saveDialog.Filter = "JSON Files (*.json)|*.json|All Files (*.*)|*.*"
@@ -2487,6 +2619,14 @@ $script:TrackingTimer.Add_Tick({
         $appCount = $script:CurrentAppUsage.Count
         $TrackingDetailText.Text = "Monitoring $appCount apps"
 
+        # Update tray icon tooltip
+        if ($script:TrayIcon -and $script:TrayIcon.Visible) {
+            $script:TrayIcon.Text = "Digital Wellbeing - ${hours}h ${mins}m"
+            if ($script:TrayStatusItem) {
+                $script:TrayStatusItem.Text = "Screen Time: ${hours}h ${mins}m"
+            }
+        }
+
         # Auto-refresh current page
         $currentPage = $script:Pages | Where-Object { $_.Visibility -eq 'Visible' }
         if ($currentPage -eq $PageDashboard) { Update-Dashboard }
@@ -2499,12 +2639,28 @@ $DashboardDateText.Text = (Get-Date).ToString("dddd, MMMM dd, yyyy")
 Update-Dashboard
 
 # ══════════════════════════════════════════════════════════════════════
-# SHOW WINDOW
+# SYSTEM TRAY INITIALIZATION & SHOW WINDOW
 # ══════════════════════════════════════════════════════════════════════
+
+# Initialize system tray icon
+Initialize-TrayIcon
+
+# Background mode: start minimized to tray (for Windows startup)
+if ($Background) {
+    $window.WindowState = 'Minimized'
+    $window.ShowInTaskbar = $false
+    $script:TrayIcon.Visible = $true
+    $script:TrayIcon.ShowBalloonTip(3000, "Digital Wellbeing", "Running in background. Double-click tray icon to open.", [System.Windows.Forms.ToolTipIcon]::Info)
+    $window.Hide()
+}
 
 $window.ShowDialog() | Out-Null
 
 # Cleanup
 if ($script:TrackingTimer) { $script:TrackingTimer.Stop() }
+if ($script:TrayIcon) {
+    $script:TrayIcon.Visible = $false
+    $script:TrayIcon.Dispose()
+}
 Save-JsonData -Path $DataFile -Data $script:UsageData
 Save-JsonData -Path $ConfigFile -Data $script:Config
