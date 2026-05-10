@@ -123,7 +123,7 @@ function Initialize-TrayIcon {
 
 $script:ForceClose = $false
 
-# ── Win32 API for Foreground Window Detection ──
+# ── Win32 API for Foreground Window Detection & Global Hotkey ──
 try {
     Add-Type @"
         using System;
@@ -136,6 +136,16 @@ try {
             public static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint processId);
             [DllImport("user32.dll", CharSet = CharSet.Unicode)]
             public static extern int GetWindowText(IntPtr hWnd, StringBuilder text, int count);
+        }
+        public class HotKeyHelper {
+            [DllImport("user32.dll")]
+            public static extern bool RegisterHotKey(IntPtr hWnd, int id, uint fsModifiers, uint vk);
+            [DllImport("user32.dll")]
+            public static extern bool UnregisterHotKey(IntPtr hWnd, int id);
+            public const uint MOD_WIN = 0x0008;
+            public const uint MOD_NOREPEAT = 0x4000;
+            public const uint VK_D = 0x44;
+            public const int HOTKEY_ID = 9000;
         }
 "@ -ErrorAction SilentlyContinue
 } catch { }
@@ -1187,6 +1197,48 @@ function Get-AppIcon {
                                             </StackPanel>
                                             <TextBlock Name="PinStatusText" Text="No PIN set" FontSize="11"
                                                        Foreground="{StaticResource TextSecondaryBrush}" Margin="0,4,0,0"/>
+
+                                            <!-- Change PIN Section -->
+                                            <Border Name="ChangePinSection" Margin="0,16,0,0" Padding="12"
+                                                    Background="{StaticResource BgSecondaryBrush}" CornerRadius="8"
+                                                    Visibility="Collapsed">
+                                                <StackPanel>
+                                                    <TextBlock Text="Change PIN" FontSize="14" FontFamily="Segoe UI Semibold"
+                                                               Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,10"/>
+                                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                                        <TextBlock Text="Current PIN:" FontSize="12"
+                                                                   Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center"
+                                                                   Width="100"/>
+                                                        <PasswordBox Name="OldPinBox" Style="{StaticResource ModernPasswordBox}"
+                                                                     Width="150" MaxLength="6"/>
+                                                    </StackPanel>
+                                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                                        <TextBlock Text="New PIN:" FontSize="12"
+                                                                   Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center"
+                                                                   Width="100"/>
+                                                        <PasswordBox Name="NewPinBox" Style="{StaticResource ModernPasswordBox}"
+                                                                     Width="150" MaxLength="6"/>
+                                                    </StackPanel>
+                                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                                        <TextBlock Text="Confirm PIN:" FontSize="12"
+                                                                   Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center"
+                                                                   Width="100"/>
+                                                        <PasswordBox Name="ConfirmPinBox" Style="{StaticResource ModernPasswordBox}"
+                                                                     Width="150" MaxLength="6"/>
+                                                    </StackPanel>
+                                                    <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                                                        <Button Name="SaveNewPinBtn" Style="{StaticResource ModernButton}"
+                                                                Content="Save New PIN" Margin="0,0,8,0"/>
+                                                        <Button Name="CancelChangePinBtn" Style="{StaticResource DangerButton}"
+                                                                Content="Cancel"/>
+                                                    </StackPanel>
+                                                    <TextBlock Name="ChangePinErrorText" Text="" FontSize="11"
+                                                               Foreground="{StaticResource DangerBrush}" Margin="0,6,0,0"/>
+                                                </StackPanel>
+                                            </Border>
+                                            <Button Name="ChangePinBtn" Style="{StaticResource ModernButton}"
+                                                    Content="Change PIN" Margin="0,10,0,0" HorizontalAlignment="Left"
+                                                    Visibility="Collapsed"/>
                                         </StackPanel>
                                     </Border>
 
@@ -2318,9 +2370,73 @@ $SetPinBtn.Add_Click({
         $SetPinBox.Password = ""
         $PinStatusText.Text = "PIN has been set successfully"
         $PinStatusText.Foreground = $window.FindResource("SuccessBrush")
+        $ChangePinBtn.Visibility = 'Visible'
     } else {
         [System.Windows.MessageBox]::Show("PIN must be 4-6 digits.", "Invalid PIN", 'OK', 'Warning')
     }
+})
+
+# Show Change PIN button if PIN is already set
+if ($script:ParentalConfig.PinHash) {
+    $ChangePinBtn.Visibility = 'Visible'
+}
+
+$ChangePinBtn.Add_Click({
+    $ChangePinSection.Visibility = 'Visible'
+    $ChangePinBtn.Visibility = 'Collapsed'
+    $OldPinBox.Password = ""
+    $NewPinBox.Password = ""
+    $ConfirmPinBox.Password = ""
+    $ChangePinErrorText.Text = ""
+})
+
+$CancelChangePinBtn.Add_Click({
+    $ChangePinSection.Visibility = 'Collapsed'
+    $ChangePinBtn.Visibility = 'Visible'
+    $OldPinBox.Password = ""
+    $NewPinBox.Password = ""
+    $ConfirmPinBox.Password = ""
+    $ChangePinErrorText.Text = ""
+})
+
+$SaveNewPinBtn.Add_Click({
+    $oldPin = $OldPinBox.Password
+    $newPin = $NewPinBox.Password
+    $confirmPin = $ConfirmPinBox.Password
+
+    # Verify current PIN
+    $oldHash = Get-HashString $oldPin
+    if ($oldHash -ne $script:ParentalConfig.PinHash) {
+        $ChangePinErrorText.Text = "Current PIN is incorrect."
+        $OldPinBox.Password = ""
+        return
+    }
+
+    # Validate new PIN
+    if ($newPin.Length -lt 4 -or $newPin.Length -gt 6 -or $newPin -notmatch '^\d+$') {
+        $ChangePinErrorText.Text = "New PIN must be 4-6 digits."
+        return
+    }
+
+    # Confirm match
+    if ($newPin -ne $confirmPin) {
+        $ChangePinErrorText.Text = "New PIN and Confirm PIN do not match."
+        $ConfirmPinBox.Password = ""
+        return
+    }
+
+    # Save new PIN
+    $script:ParentalConfig.PinHash = Get-HashString $newPin
+    Save-JsonData -Path $ParentalFile -Data $script:ParentalConfig
+    $OldPinBox.Password = ""
+    $NewPinBox.Password = ""
+    $ConfirmPinBox.Password = ""
+    $ChangePinErrorText.Text = ""
+    $ChangePinSection.Visibility = 'Collapsed'
+    $ChangePinBtn.Visibility = 'Visible'
+    $PinStatusText.Text = "PIN changed successfully"
+    $PinStatusText.Foreground = $window.FindResource("SuccessBrush")
+    [System.Windows.MessageBox]::Show("PIN has been changed successfully.", "PIN Changed", 'OK', 'Information')
 })
 
 $ParentalEnabledToggle.Add_Checked({
@@ -2645,12 +2761,46 @@ Update-Dashboard
 # Initialize system tray icon
 Initialize-TrayIcon
 
+# ── Global Hotkey: Win+D to bring app to foreground ──
+$script:HotkeyRegistered = $false
+
+$window.Add_SourceInitialized({
+    try {
+        $helper = [System.Windows.Interop.WindowInteropHelper]::new($window)
+        $hwnd = $helper.Handle
+
+        # Register Win+D hotkey (MOD_WIN | MOD_NOREPEAT)
+        $modifiers = [HotKeyHelper]::MOD_WIN -bor [HotKeyHelper]::MOD_NOREPEAT
+        $result = [HotKeyHelper]::RegisterHotKey($hwnd, [HotKeyHelper]::HOTKEY_ID, $modifiers, [HotKeyHelper]::VK_D)
+        if ($result) {
+            $script:HotkeyRegistered = $true
+        }
+
+        # Add WndProc hook for hotkey message (WM_HOTKEY = 0x0312)
+        $source = [System.Windows.Interop.HwndSource]::FromHwnd($hwnd)
+        $source.AddHook({
+            param($hwnd, $msg, $wParam, $lParam, [ref]$handled)
+            if ($msg -eq 0x0312 -and $wParam.ToInt32() -eq [HotKeyHelper]::HOTKEY_ID) {
+                $window.Show()
+                $window.ShowInTaskbar = $true
+                $window.WindowState = 'Normal'
+                $window.Activate()
+                $window.Topmost = $true
+                $window.Topmost = $false
+                if ($script:TrayIcon) { $script:TrayIcon.Visible = $false }
+                $handled.Value = $true
+            }
+            return [IntPtr]::Zero
+        })
+    } catch { }
+})
+
 # Background mode: start minimized to tray (for Windows startup)
 if ($Background) {
     $window.WindowState = 'Minimized'
     $window.ShowInTaskbar = $false
     $script:TrayIcon.Visible = $true
-    $script:TrayIcon.ShowBalloonTip(3000, "Digital Wellbeing", "Running in background. Double-click tray icon to open.", [System.Windows.Forms.ToolTipIcon]::Info)
+    $script:TrayIcon.ShowBalloonTip(3000, "Digital Wellbeing", "Running in background. Press Win+D to open, or double-click tray icon.", [System.Windows.Forms.ToolTipIcon]::Info)
     $window.Hide()
 }
 
@@ -2658,6 +2808,15 @@ $window.ShowDialog() | Out-Null
 
 # Cleanup
 if ($script:TrackingTimer) { $script:TrackingTimer.Stop() }
+
+# Unregister hotkey
+if ($script:HotkeyRegistered) {
+    try {
+        $helper = [System.Windows.Interop.WindowInteropHelper]::new($window)
+        [HotKeyHelper]::UnregisterHotKey($helper.Handle, [HotKeyHelper]::HOTKEY_ID) | Out-Null
+    } catch { }
+}
+
 if ($script:TrayIcon) {
     $script:TrayIcon.Visible = $false
     $script:TrayIcon.Dispose()
