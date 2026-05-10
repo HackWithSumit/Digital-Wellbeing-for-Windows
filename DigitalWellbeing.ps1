@@ -68,10 +68,54 @@ function Test-WindowsStartup {
     } catch { return $false }
 }
 
+function New-TrayIcon {
+    $bmp = New-Object System.Drawing.Bitmap(32, 32)
+    $g = [System.Drawing.Graphics]::FromImage($bmp)
+    $g.SmoothingMode = 'AntiAlias'
+    $g.InterpolationMode = 'HighQualityBicubic'
+    $g.Clear([System.Drawing.Color]::Transparent)
+
+    # Gradient circle background (purple)
+    $bgBrush = New-Object System.Drawing.Drawing2D.LinearGradientBrush(
+        (New-Object System.Drawing.Point(0, 0)),
+        (New-Object System.Drawing.Point(32, 32)),
+        [System.Drawing.Color]::FromArgb(108, 99, 255),
+        [System.Drawing.Color]::FromArgb(90, 82, 213)
+    )
+    $g.FillEllipse($bgBrush, 1, 1, 30, 30)
+
+    # Clock circle (white outline)
+    $pen = New-Object System.Drawing.Pen([System.Drawing.Color]::White, 2)
+    $g.DrawEllipse($pen, 7, 7, 18, 18)
+
+    # Clock hands (white)
+    $centerX = 16; $centerY = 16
+    # Hour hand (pointing to ~10 o'clock)
+    $g.DrawLine($pen, $centerX, $centerY, 12, 11)
+    # Minute hand (pointing to ~12 o'clock)
+    $g.DrawLine($pen, $centerX, $centerY, 16, 9)
+
+    # Center dot
+    $g.FillEllipse([System.Drawing.Brushes]::White, 14, 14, 4, 4)
+
+    # Small accent dot (bottom-right, pink/accent)
+    $accentBrush = New-Object System.Drawing.SolidBrush([System.Drawing.Color]::FromArgb(255, 101, 132))
+    $g.FillEllipse($accentBrush, 23, 23, 7, 7)
+
+    $pen.Dispose()
+    $bgBrush.Dispose()
+    $accentBrush.Dispose()
+    $g.Dispose()
+
+    $hIcon = $bmp.GetHicon()
+    $icon = [System.Drawing.Icon]::FromHandle($hIcon)
+    return $icon
+}
+
 function Initialize-TrayIcon {
     $script:TrayIcon = New-Object System.Windows.Forms.NotifyIcon
     $script:TrayIcon.Text = "Digital Wellbeing"
-    $script:TrayIcon.Icon = [System.Drawing.SystemIcons]::Application
+    $script:TrayIcon.Icon = New-TrayIcon
     $script:TrayIcon.Visible = $true
 
     # Context menu
@@ -1535,7 +1579,7 @@ $MaxBtn.Add_Click({
     }
 })
 $CloseBtn.Add_Click({
-    if ($script:Config.MinimizeToTray -and -not $script:ForceClose) {
+    if (-not $script:ForceClose) {
         $window.Hide()
         $script:TrayIcon.ShowBalloonTip(3000, "Digital Wellbeing", "Running in background. Click tray icon to open.", [System.Windows.Forms.ToolTipIcon]::Info)
     } else {
@@ -1550,12 +1594,13 @@ $CloseBtn.Add_Click({
     }
 })
 
-# Intercept window closing to minimize to tray
+# Intercept window closing (X button, Alt+F4) to minimize to tray
 $window.Add_Closing({
     param($sender, $e)
-    if ($script:Config.MinimizeToTray -and -not $script:ForceClose) {
+    if (-not $script:ForceClose) {
         $e.Cancel = $true
         $window.Hide()
+        $script:TrayIcon.ShowBalloonTip(3000, "Digital Wellbeing", "Running in background. Click tray icon to open.", [System.Windows.Forms.ToolTipIcon]::Info)
     }
 })
 
