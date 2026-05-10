@@ -353,8 +353,10 @@ function Get-RunningApps {
                           @{N='StartTime';E={$_.StartTime}} -Unique
 
         foreach ($proc in $processes) {
+            $friendlyName = Get-FriendlyAppName -ProcessName $proc.ProcessName -ProcessId $proc.Id
             $apps += @{
-                Name       = $proc.ProcessName
+                Name       = $friendlyName
+                ProcessName = $proc.ProcessName
                 Title      = $proc.MainWindowTitle
                 PID        = $proc.Id
                 CPU        = [math]::Round($proc.CPU, 1)
@@ -374,13 +376,15 @@ function Get-ForegroundApp {
         $proc = Get-Process -Id $procId -ErrorAction SilentlyContinue
         $sb = New-Object System.Text.StringBuilder 256
         [ForegroundWindow]::GetWindowText($hwnd, $sb, 256) | Out-Null
+        $friendlyName = Get-FriendlyAppName -ProcessName $proc.ProcessName -ProcessId $procId
         return @{
-            Name  = $proc.ProcessName
+            Name  = $friendlyName
+            ProcessName = $proc.ProcessName
             Title = $sb.ToString()
             PID   = $procId
         }
     } catch {
-        return @{ Name = "Unknown"; Title = ""; PID = 0 }
+        return @{ Name = "Unknown"; ProcessName = "Unknown"; Title = ""; PID = 0 }
     }
 }
 
@@ -501,6 +505,141 @@ function Format-Duration {
     $hours = [math]::Floor($minutes / 60)
     $mins = $minutes % 60
     return "${hours}h ${mins}m"
+}
+
+# ── Friendly App Name Resolution ──
+$script:AppNameCache = @{}
+$script:KnownAppNames = @{
+    "chrome"            = "Google Chrome"
+    "msedge"            = "Microsoft Edge"
+    "firefox"           = "Mozilla Firefox"
+    "brave"             = "Brave Browser"
+    "opera"             = "Opera Browser"
+    "iexplore"          = "Internet Explorer"
+    "Code"              = "Visual Studio Code"
+    "devenv"            = "Visual Studio"
+    "WINWORD"           = "Microsoft Word"
+    "EXCEL"             = "Microsoft Excel"
+    "POWERPNT"          = "Microsoft PowerPoint"
+    "ONENOTE"           = "Microsoft OneNote"
+    "OUTLOOK"           = "Microsoft Outlook"
+    "Teams"             = "Microsoft Teams"
+    "ms-teams"          = "Microsoft Teams"
+    "Spotify"           = "Spotify"
+    "Discord"           = "Discord"
+    "slack"             = "Slack"
+    "Telegram"          = "Telegram"
+    "WhatsApp"          = "WhatsApp"
+    "explorer"          = "File Explorer"
+    "notepad"           = "Notepad"
+    "notepad++"         = "Notepad++"
+    "WindowsTerminal"   = "Windows Terminal"
+    "powershell"        = "PowerShell"
+    "pwsh"              = "PowerShell"
+    "cmd"               = "Command Prompt"
+    "mspaint"           = "Paint"
+    "SnippingTool"      = "Snipping Tool"
+    "ScreenSketch"      = "Snip & Sketch"
+    "Calculator"        = "Calculator"
+    "Photos"            = "Photos"
+    "Video.UI"          = "Movies & TV"
+    "WinStore.App"      = "Microsoft Store"
+    "Taskmgr"           = "Task Manager"
+    "mmc"               = "Management Console"
+    "regedit"           = "Registry Editor"
+    "control"           = "Control Panel"
+    "SystemSettings"    = "Settings"
+    "ApplicationFrameHost" = "UWP App Host"
+    "SearchApp"         = "Windows Search"
+    "Widgets"           = "Widgets"
+    "PhoneExperienceHost" = "Phone Link"
+    "GameBar"           = "Xbox Game Bar"
+    "XboxApp"           = "Xbox"
+    "Steam"             = "Steam"
+    "EpicGamesLauncher" = "Epic Games Launcher"
+    "vlc"               = "VLC Media Player"
+    "wmplayer"          = "Windows Media Player"
+    "Acrobat"           = "Adobe Acrobat"
+    "AcroRd32"          = "Adobe Reader"
+    "Photoshop"         = "Adobe Photoshop"
+    "Illustrator"       = "Adobe Illustrator"
+    "AfterFX"           = "Adobe After Effects"
+    "Premiere Pro"      = "Adobe Premiere Pro"
+    "GIMP"              = "GIMP"
+    "OBS64"             = "OBS Studio"
+    "obs64"             = "OBS Studio"
+    "Zoom"              = "Zoom"
+    "ZoomIt"            = "ZoomIt"
+    "Skype"             = "Skype"
+    "thunderbird"       = "Thunderbird"
+    "WinRAR"            = "WinRAR"
+    "7zFM"              = "7-Zip"
+    "filezilla"         = "FileZilla"
+    "putty"             = "PuTTY"
+    "GitHubDesktop"     = "GitHub Desktop"
+    "Postman"           = "Postman"
+    "idea64"            = "IntelliJ IDEA"
+    "pycharm64"         = "PyCharm"
+    "webstorm64"        = "WebStorm"
+    "rider64"           = "Rider"
+    "sublime_text"      = "Sublime Text"
+    "atom"              = "Atom"
+    "mintty"            = "Git Bash"
+    "ConEmu64"          = "ConEmu"
+    "Hyper"             = "Hyper Terminal"
+    "Figma"             = "Figma"
+    "Notion"            = "Notion"
+    "Obsidian"          = "Obsidian"
+    "Todoist"           = "Todoist"
+    "Trello"            = "Trello"
+    "Blender"           = "Blender"
+    "Unity"             = "Unity Editor"
+    "UE4Editor"         = "Unreal Engine"
+    "AndroidStudio64"   = "Android Studio"
+}
+
+function Get-FriendlyAppName {
+    param([string]$ProcessName, [int]$ProcessId = 0)
+
+    # Check cache first
+    if ($script:AppNameCache.ContainsKey($ProcessName)) {
+        return $script:AppNameCache[$ProcessName]
+    }
+
+    # Check known names map
+    if ($script:KnownAppNames.ContainsKey($ProcessName)) {
+        $friendly = $script:KnownAppNames[$ProcessName]
+        $script:AppNameCache[$ProcessName] = $friendly
+        return $friendly
+    }
+
+    # Try to get FileDescription from the process executable
+    try {
+        $proc = if ($ProcessId -gt 0) {
+            Get-Process -Id $ProcessId -ErrorAction SilentlyContinue
+        } else {
+            Get-Process -Name $ProcessName -ErrorAction SilentlyContinue | Select-Object -First 1
+        }
+        if ($proc -and $proc.MainModule -and $proc.MainModule.FileVersionInfo) {
+            $desc = $proc.MainModule.FileVersionInfo.FileDescription
+            if ($desc -and $desc.Trim().Length -gt 1 -and $desc -ne $ProcessName) {
+                $friendly = $desc.Trim()
+                $script:AppNameCache[$ProcessName] = $friendly
+                return $friendly
+            }
+            $productName = $proc.MainModule.FileVersionInfo.ProductName
+            if ($productName -and $productName.Trim().Length -gt 1 -and $productName -ne $ProcessName) {
+                $friendly = $productName.Trim()
+                $script:AppNameCache[$ProcessName] = $friendly
+                return $friendly
+            }
+        }
+    } catch { }
+
+    # Fallback: capitalize process name
+    $friendly = (Get-Culture).TextInfo.ToTitleCase($ProcessName.ToLower())
+    $script:AppNameCache[$ProcessName] = $friendly
+    return $friendly
 }
 
 function Get-AppIcon {
@@ -1201,7 +1340,7 @@ function Get-AppIcon {
                                             </Button>
                                         </Grid>
                                         <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                                            <TextBlock Text="App process name (e.g., chrome, Code, WINWORD)"
+                                            <TextBlock Text="App name (e.g., Google Chrome, Discord, Notepad)"
                                                        FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,30,0"/>
                                             <TextBlock Text="Daily limit in minutes"
                                                        FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}"/>
@@ -1887,7 +2026,7 @@ function Update-RunningApps {
         }
 
         $iconText = New-Object System.Windows.Controls.TextBlock
-        $iconText.Text = [string](Get-AppIcon $app.Name)
+        $iconText.Text = [string](Get-AppIcon $app.ProcessName)
         $iconText.FontFamily = New-Object System.Windows.Media.FontFamily("Segoe MDL2 Assets")
         $iconText.FontSize = 16
         $iconText.Foreground = $window.FindResource("PrimaryBrush")
@@ -1958,7 +2097,7 @@ function Update-AppsList {
     $systemAppsList = @()
 
     foreach ($app in $apps) {
-        if ($app.Name -in $script:SystemApps) {
+        if ($app.ProcessName -in $script:SystemApps) {
             $systemAppsList += $app
         } else {
             $thirdPartyApps += $app
@@ -1985,7 +2124,7 @@ function Update-AppsList {
 
         # Icon
         $iconText = New-Object System.Windows.Controls.TextBlock
-        $iconText.Text = [string](Get-AppIcon $app.Name)
+        $iconText.Text = [string](Get-AppIcon $app.ProcessName)
         $iconText.FontFamily = New-Object System.Windows.Media.FontFamily("Segoe MDL2 Assets")
         $iconText.FontSize = 16
         $iconText.Foreground = $window.FindResource("PrimaryBrush")
@@ -2065,7 +2204,7 @@ function Update-AppsList {
         $sp.Orientation = 'Horizontal'
 
         $iconText = New-Object System.Windows.Controls.TextBlock
-        $iconText.Text = [string](Get-AppIcon $app.Name)
+        $iconText.Text = [string](Get-AppIcon $app.ProcessName)
         $iconText.FontFamily = New-Object System.Windows.Media.FontFamily("Segoe MDL2 Assets")
         $iconText.FontSize = 18
         $iconText.Foreground = $window.FindResource("AccentBrush")
@@ -2513,15 +2652,15 @@ function Update-LimitsList {
     # Quick Set buttons
     $QuickLimitsPanel.Children.Clear()
     $quickApps = @(
-        @{Name="Chrome"; Process="chrome"; Icon=[char]0xE774},
-        @{Name="Edge"; Process="msedge"; Icon=[char]0xE774},
-        @{Name="Firefox"; Process="firefox"; Icon=[char]0xE774},
-        @{Name="VS Code"; Process="Code"; Icon=[char]0xE943},
-        @{Name="Word"; Process="WINWORD"; Icon=[char]0xE8A5},
-        @{Name="Excel"; Process="EXCEL"; Icon=[char]0xE9F9},
+        @{Name="Google Chrome"; Process="chrome"; Icon=[char]0xE774},
+        @{Name="Microsoft Edge"; Process="msedge"; Icon=[char]0xE774},
+        @{Name="Mozilla Firefox"; Process="firefox"; Icon=[char]0xE774},
+        @{Name="Visual Studio Code"; Process="Code"; Icon=[char]0xE943},
+        @{Name="Microsoft Word"; Process="WINWORD"; Icon=[char]0xE8A5},
+        @{Name="Microsoft Excel"; Process="EXCEL"; Icon=[char]0xE9F9},
         @{Name="Spotify"; Process="Spotify"; Icon=[char]0xE8D6},
         @{Name="Discord"; Process="Discord"; Icon=[char]0xE8BD},
-        @{Name="Teams"; Process="Teams"; Icon=[char]0xE716},
+        @{Name="Microsoft Teams"; Process="Teams"; Icon=[char]0xE716},
         @{Name="Notepad"; Process="notepad"; Icon=[char]0xE70F}
     )
 
@@ -2550,7 +2689,8 @@ function Update-LimitsList {
             if (-not $script:Limits.PSObject) {
                 $script:Limits = [PSCustomObject]@{}
             }
-            $script:Limits | Add-Member -NotePropertyName $procName -NotePropertyValue 60 -Force
+            $friendlyName = Get-FriendlyAppName -ProcessName $procName
+            $script:Limits | Add-Member -NotePropertyName $friendlyName -NotePropertyValue 60 -Force
             Save-JsonData -Path $LimitsFile -Data $script:Limits
             Update-LimitsList
         })
