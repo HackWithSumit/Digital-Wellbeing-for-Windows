@@ -1600,17 +1600,9 @@ $MaxBtn.Add_Click({
 })
 $CloseBtn.Add_Click({
     if (-not $script:ForceClose) {
-        $window.Hide()
+        $window.WindowState = 'Minimized'
+        $window.ShowInTaskbar = $false
         $script:TrayIcon.ShowBalloonTip(3000, "Digital Wellbeing", "Running in background. Click tray icon to open.", [System.Windows.Forms.ToolTipIcon]::Info)
-    } else {
-        $script:ForceClose = $true
-        if ($script:TrayIcon) {
-            $script:TrayIcon.Visible = $false
-            $script:TrayIcon.Dispose()
-        }
-        Save-JsonData -Path $DataFile -Data $script:UsageData
-        Save-JsonData -Path $ConfigFile -Data $script:Config
-        $window.Close()
     }
 })
 
@@ -1619,7 +1611,8 @@ $window.Add_Closing({
     param($sender, $e)
     if (-not $script:ForceClose) {
         $e.Cancel = $true
-        $window.Hide()
+        $window.WindowState = 'Minimized'
+        $window.ShowInTaskbar = $false
         $script:TrayIcon.ShowBalloonTip(3000, "Digital Wellbeing", "Running in background. Click tray icon to open.", [System.Windows.Forms.ToolTipIcon]::Info)
     }
 })
@@ -3074,7 +3067,6 @@ if ($Background) {
     $window.WindowState = 'Minimized'
     $window.ShowInTaskbar = $false
     $script:TrayIcon.ShowBalloonTip(3000, "Digital Wellbeing", "Running in background. Click tray icon or press Ctrl+Shift+D to open.", [System.Windows.Forms.ToolTipIcon]::Info)
-    $window.Hide()
 }
 
 $window.ShowDialog() | Out-Null
