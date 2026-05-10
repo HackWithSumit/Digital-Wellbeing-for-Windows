@@ -599,7 +599,6 @@ function Get-AppIcon {
             <Grid.RowDefinitions>
                 <RowDefinition Height="40"/>
                 <RowDefinition Height="*"/>
-                <RowDefinition Height="30"/>
             </Grid.RowDefinitions>
 
             <!-- Title Bar -->
@@ -637,7 +636,7 @@ function Get-AppIcon {
 
                 <!-- Sidebar Navigation -->
                 <Border Grid.Column="0" Background="{StaticResource BgSecondaryBrush}"
-                        CornerRadius="0" Padding="8,16">
+                        CornerRadius="0,0,0,16" Padding="8,16">
                     <DockPanel>
                         <!-- User Profile Area -->
                         <StackPanel DockPanel.Dock="Top" Margin="8,0,8,20">
@@ -1302,14 +1301,6 @@ function Get-AppIcon {
                         </ScrollViewer>
                     </Grid>
                 </Border>
-            <!-- Footer -->
-            <Border Grid.Row="2" Background="{StaticResource BgSecondaryBrush}"
-                    CornerRadius="0,0,16,16" Padding="16,0">
-                <TextBlock Text="Programmed by Sumit Ghosh. (+917076501101)"
-                           FontSize="11" FontFamily="Segoe UI"
-                           Foreground="{StaticResource TextSecondaryBrush}"
-                           HorizontalAlignment="Right" VerticalAlignment="Center"/>
-            </Border>
             </Grid>
         </Grid>
     </Border>
@@ -1476,8 +1467,101 @@ function Update-Dashboard {
         $DashTopApps.Children.Add($noData)
     }
 
+    # Usage Breakdown Chart
+    Draw-UsageBreakdownChart
+
     # Running Apps
     Update-RunningApps
+}
+
+function Draw-UsageBreakdownChart {
+    $DashChart.Children.Clear()
+    $chartWidth = $DashChart.ActualWidth
+    if ($chartWidth -lt 50) { $chartWidth = 320 }
+    $chartHeight = 200
+
+    $sortedApps = $script:CurrentAppUsage.GetEnumerator() | Sort-Object Value -Descending | Select-Object -First 6
+    $totalUsage = ($sortedApps | Measure-Object -Property Value -Sum).Sum
+
+    if (-not $totalUsage -or $totalUsage -eq 0) {
+        $noData = New-Object System.Windows.Controls.TextBlock
+        $noData.Text = "Collecting data..."
+        $noData.Foreground = $window.FindResource("TextSecondaryBrush")
+        $noData.FontSize = 12
+        $noData.FontStyle = 'Italic'
+        [System.Windows.Controls.Canvas]::SetLeft($noData, ($chartWidth / 2 - 50))
+        [System.Windows.Controls.Canvas]::SetTop($noData, ($chartHeight / 2 - 10))
+        $DashChart.Children.Add($noData)
+        return
+    }
+
+    $colors = @("#6C63FF", "#FF6584", "#00C853", "#FFB300", "#03DAC5", "#BB86FC")
+    $maxVal = ($sortedApps | Measure-Object -Property Value -Maximum).Maximum
+    if (-not $maxVal -or $maxVal -eq 0) { $maxVal = 1 }
+
+    $appCount = @($sortedApps).Count
+    $totalBarSpace = $chartWidth - 20
+    $gap = if ($appCount -gt 1) { 12 } else { 0 }
+    $barWidth = [math]::Floor(($totalBarSpace - (($appCount - 1) * $gap)) / [math]::Max($appCount, 1))
+    $barWidth = [math]::Min($barWidth, 60)
+    $totalBarsWidth = ($barWidth * $appCount) + ($gap * [math]::Max($appCount - 1, 0))
+    $startX = [math]::Max(($chartWidth - $totalBarsWidth) / 2, 10)
+
+    $i = 0
+    foreach ($app in $sortedApps) {
+        $x = $startX + ($i * ($barWidth + $gap))
+        $barHeight = [math]::Max(($app.Value / $maxVal) * ($chartHeight - 60), 4)
+        $y = $chartHeight - 35 - $barHeight
+
+        # Bar
+        $bar = New-Object System.Windows.Shapes.Rectangle
+        $bar.Width = $barWidth
+        $bar.Height = $barHeight
+        $bar.RadiusX = 4
+        $bar.RadiusY = 4
+        $bar.Fill = [System.Windows.Media.BrushConverter]::new().ConvertFrom($colors[$i % $colors.Count])
+        [System.Windows.Controls.Canvas]::SetLeft($bar, $x)
+        [System.Windows.Controls.Canvas]::SetTop($bar, $y)
+        $DashChart.Children.Add($bar)
+
+        # Time label above bar
+        $valLabel = New-Object System.Windows.Controls.TextBlock
+        $valLabel.Text = Format-Duration $app.Value
+        $valLabel.FontSize = 9
+        $valLabel.Foreground = $window.FindResource("TextPrimaryBrush")
+        $valLabel.TextAlignment = 'Center'
+        $valLabel.Width = $barWidth
+        [System.Windows.Controls.Canvas]::SetLeft($valLabel, $x)
+        [System.Windows.Controls.Canvas]::SetTop($valLabel, [math]::Max($y - 16, 0))
+        $DashChart.Children.Add($valLabel)
+
+        # App name label below bar
+        $nameLabel = New-Object System.Windows.Controls.TextBlock
+        $appDisplayName = $app.Key
+        if ($appDisplayName.Length -gt 8) { $appDisplayName = $appDisplayName.Substring(0, 7) + ".." }
+        $nameLabel.Text = $appDisplayName
+        $nameLabel.FontSize = 9
+        $nameLabel.Foreground = $window.FindResource("TextSecondaryBrush")
+        $nameLabel.TextAlignment = 'Center'
+        $nameLabel.Width = $barWidth
+        [System.Windows.Controls.Canvas]::SetLeft($nameLabel, $x)
+        [System.Windows.Controls.Canvas]::SetTop($nameLabel, $chartHeight - 30)
+        $DashChart.Children.Add($nameLabel)
+
+        # Percentage label
+        $pctVal = [math]::Round(($app.Value / $totalUsage) * 100)
+        $pctLabel = New-Object System.Windows.Controls.TextBlock
+        $pctLabel.Text = "${pctVal}%"
+        $pctLabel.FontSize = 8
+        $pctLabel.Foreground = $window.FindResource("TextSecondaryBrush")
+        $pctLabel.TextAlignment = 'Center'
+        $pctLabel.Width = $barWidth
+        [System.Windows.Controls.Canvas]::SetLeft($pctLabel, $x)
+        [System.Windows.Controls.Canvas]::SetTop($pctLabel, $chartHeight - 16)
+        $DashChart.Children.Add($pctLabel)
+
+        $i++
+    }
 }
 
 function Update-RunningApps {
