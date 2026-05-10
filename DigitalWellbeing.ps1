@@ -33,6 +33,24 @@ Add-Type -AssemblyName PresentationFramework
 Add-Type -AssemblyName PresentationCore
 Add-Type -AssemblyName WindowsBase
 Add-Type -AssemblyName System.Windows.Forms
+Add-Type -AssemblyName System.Drawing
+
+# ── Win32 API for Foreground Window Detection ──
+try {
+    Add-Type @"
+        using System;
+        using System.Runtime.InteropServices;
+        using System.Text;
+        public class ForegroundWindow {
+            [DllImport("user32.dll")]
+            public static extern IntPtr GetForegroundWindow();
+            [DllImport("user32.dll")]
+            public static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint processId);
+            [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+            public static extern int GetWindowText(IntPtr hWnd, StringBuilder text, int count);
+        }
+"@ -ErrorAction SilentlyContinue
+} catch { }
 
 # ══════════════════════════════════════════════════════════════════════
 # DATA LAYER - Persistence & Configuration
@@ -89,7 +107,7 @@ function Load-JsonData {
             if ($content) { return $content | ConvertFrom-Json }
         } catch { }
     }
-    if ($Default) {
+    if ($null -ne $Default) {
         Save-JsonData -Path $Path -Data $Default
         return $Default
     }
@@ -106,15 +124,15 @@ function Get-HashString {
 
 # Load configuration
 $script:Config = Load-JsonData -Path $ConfigFile -Default (Get-DefaultConfig)
-$script:Limits = Load-JsonData -Path $LimitsFile -Default @{}
+$script:Limits = Load-JsonData -Path $LimitsFile -Default ([PSCustomObject]@{})
 $script:ParentalConfig = Load-JsonData -Path $ParentalFile -Default (Get-DefaultParentalConfig)
 
 # Initialize today's usage data
 $script:TodayKey = (Get-Date).ToString("yyyy-MM-dd")
-$script:UsageData = Load-JsonData -Path $DataFile -Default @{}
+$script:UsageData = Load-JsonData -Path $DataFile -Default ([PSCustomObject]@{})
 
-if (-not $script:UsageData.$TodayKey) {
-    $script:UsageData | Add-Member -NotePropertyName $TodayKey -NotePropertyValue @{} -Force
+if (-not $script:UsageData.PSObject.Properties[$script:TodayKey]) {
+    $script:UsageData | Add-Member -NotePropertyName $TodayKey -NotePropertyValue ([PSCustomObject]@{}) -Force
     Save-JsonData -Path $DataFile -Data $script:UsageData
 }
 
@@ -158,32 +176,16 @@ function Get-RunningApps {
 
 function Get-ForegroundApp {
     try {
-        Add-Type @"
-            using System;
-            using System.Runtime.InteropServices;
-            using System.Text;
-            public class ForegroundWindow {
-                [DllImport("user32.dll")]
-                public static extern IntPtr GetForegroundWindow();
-                [DllImport("user32.dll")]
-                public static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint processId);
-                [DllImport("user32.dll", CharSet = CharSet.Unicode)]
-                public static extern int GetWindowText(IntPtr hWnd, StringBuilder text, int count);
-            }
-"@ -ErrorAction SilentlyContinue
-    } catch { }
-
-    try {
         $hwnd = [ForegroundWindow]::GetForegroundWindow()
-        $pid = 0
-        [ForegroundWindow]::GetWindowThreadProcessId($hwnd, [ref]$pid) | Out-Null
-        $proc = Get-Process -Id $pid -ErrorAction SilentlyContinue
+        $procId = [uint32]0
+        [ForegroundWindow]::GetWindowThreadProcessId($hwnd, [ref]$procId) | Out-Null
+        $proc = Get-Process -Id $procId -ErrorAction SilentlyContinue
         $sb = New-Object System.Text.StringBuilder 256
         [ForegroundWindow]::GetWindowText($hwnd, $sb, 256) | Out-Null
         return @{
             Name  = $proc.ProcessName
             Title = $sb.ToString()
-            PID   = $pid
+            PID   = $procId
         }
     } catch {
         return @{ Name = "Unknown"; Title = ""; PID = 0 }
@@ -659,7 +661,7 @@ function Get-AppIcon {
                         <!-- Nav Buttons -->
                         <StackPanel DockPanel.Dock="Top">
                             <TextBlock Text="MENU" FontSize="10" Foreground="{StaticResource TextSecondaryBrush}"
-                                       FontFamily="Segoe UI Semibold" Margin="16,0,0,8" LetterSpacing="0.5"/>
+                                       FontFamily="Segoe UI Semibold" Margin="16,0,0,8"/>
                             <Button Name="NavDashboard" Style="{StaticResource NavButtonActiveStyle}">
                                 <StackPanel Orientation="Horizontal">
                                     <TextBlock Text="&#xE80F;" FontFamily="Segoe MDL2 Assets" FontSize="15" Width="24" Margin="0,0,10,0"/>
@@ -1312,12 +1314,14 @@ function Get-AppIcon {
 $reader = New-Object System.Xml.XmlNodeReader $xaml
 $window = [Windows.Markup.XamlReader]::Load($reader)
 
-# Get all named elements
-$xaml.SelectNodes("//*[@*[contains(translate(name(),'xX','XX'),'Name')]]") | ForEach-Object {
-    $name = $_.Name
-    if (-not $name) { $name = $_.'x:Name' }
+# Get all named elements (only match direct Name attributes, not x:Name in templates)
+$xaml.SelectNodes("//*[@Name]") | ForEach-Object {
+    $name = $_.GetAttribute("Name")
     if ($name) {
-        Set-Variable -Name $name -Value $window.FindName($name) -Scope Script
+        $element = $window.FindName($name)
+        if ($element) {
+            Set-Variable -Name $name -Value $element -Scope Script
+        }
     }
 }
 
