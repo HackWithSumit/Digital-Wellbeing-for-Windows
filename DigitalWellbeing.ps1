@@ -24,17 +24,29 @@ param(
     [switch]$Background
 )
 
-# ── Hide Console Window ──
-# Hides the CMD/PowerShell console window so only the GUI is visible
+# ── Hide Console/PowerShell Window (from screen and taskbar) ──
 Add-Type -Name ConsoleWindow -Namespace Win32Helper -MemberDefinition @"
     [DllImport("kernel32.dll")]
     public static extern IntPtr GetConsoleWindow();
     [DllImport("user32.dll")]
     public static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+    [DllImport("user32.dll")]
+    public static extern int GetWindowLong(IntPtr hWnd, int nIndex);
+    [DllImport("user32.dll")]
+    public static extern int SetWindowLong(IntPtr hWnd, int nIndex, int dwNewLong);
+    public const int GWL_EXSTYLE = -20;
+    public const int WS_EX_TOOLWINDOW = 0x00000080;
+    public const int WS_EX_APPWINDOW = 0x00040000;
 "@ -ErrorAction SilentlyContinue
 try {
     $consoleHwnd = [Win32Helper.ConsoleWindow]::GetConsoleWindow()
     if ($consoleHwnd -ne [IntPtr]::Zero) {
+        # Hide from taskbar by removing WS_EX_APPWINDOW and adding WS_EX_TOOLWINDOW
+        $exStyle = [Win32Helper.ConsoleWindow]::GetWindowLong($consoleHwnd, [Win32Helper.ConsoleWindow]::GWL_EXSTYLE)
+        $exStyle = $exStyle -band (-bnot [Win32Helper.ConsoleWindow]::WS_EX_APPWINDOW)
+        $exStyle = $exStyle -bor [Win32Helper.ConsoleWindow]::WS_EX_TOOLWINDOW
+        [Win32Helper.ConsoleWindow]::SetWindowLong($consoleHwnd, [Win32Helper.ConsoleWindow]::GWL_EXSTYLE, $exStyle) | Out-Null
+        # Hide the window completely
         [Win32Helper.ConsoleWindow]::ShowWindow($consoleHwnd, 0) | Out-Null  # SW_HIDE = 0
     }
 } catch { }
