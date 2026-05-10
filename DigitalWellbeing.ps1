@@ -145,6 +145,26 @@ function Initialize-TrayIcon {
     $exitItem = New-Object System.Windows.Forms.ToolStripMenuItem
     $exitItem.Text = "Exit"
     $exitItem.Add_Click({
+        # If PIN is set, require PIN to exit
+        if ($script:ParentalConfig.PinHash) {
+            Add-Type -AssemblyName Microsoft.VisualBasic
+            $enteredPin = [Microsoft.VisualBasic.Interaction]::InputBox(
+                "Enter PIN to exit Digital Wellbeing:",
+                "PIN Required to Exit",
+                ""
+            )
+            if (-not $enteredPin) { return }
+            $hash = Get-HashString $enteredPin
+            if ($hash -ne $script:ParentalConfig.PinHash) {
+                [System.Windows.Forms.MessageBox]::Show(
+                    "Incorrect PIN. Exit denied.",
+                    "Wrong PIN",
+                    [System.Windows.Forms.MessageBoxButtons]::OK,
+                    [System.Windows.Forms.MessageBoxIcon]::Warning
+                )
+                return
+            }
+        }
         $script:ForceClose = $true
         $script:TrayIcon.Visible = $false
         $script:TrayIcon.Dispose()
