@@ -599,6 +599,7 @@ function Get-AppIcon {
             <Grid.RowDefinitions>
                 <RowDefinition Height="40"/>
                 <RowDefinition Height="*"/>
+                <RowDefinition Height="30"/>
             </Grid.RowDefinitions>
 
             <!-- Title Bar -->
@@ -636,7 +637,7 @@ function Get-AppIcon {
 
                 <!-- Sidebar Navigation -->
                 <Border Grid.Column="0" Background="{StaticResource BgSecondaryBrush}"
-                        CornerRadius="0,0,0,16" Padding="8,16">
+                        CornerRadius="0" Padding="8,16">
                     <DockPanel>
                         <!-- User Profile Area -->
                         <StackPanel DockPanel.Dock="Top" Margin="8,0,8,20">
@@ -1301,6 +1302,14 @@ function Get-AppIcon {
                         </ScrollViewer>
                     </Grid>
                 </Border>
+            <!-- Footer -->
+            <Border Grid.Row="2" Background="{StaticResource BgSecondaryBrush}"
+                    CornerRadius="0,0,16,16" Padding="16,0">
+                <TextBlock Text="Programmed by Sumit Ghosh. (+917076501101)"
+                           FontSize="11" FontFamily="Segoe UI"
+                           Foreground="{StaticResource TextSecondaryBrush}"
+                           HorizontalAlignment="Right" VerticalAlignment="Center"/>
+            </Border>
             </Grid>
         </Grid>
     </Border>
