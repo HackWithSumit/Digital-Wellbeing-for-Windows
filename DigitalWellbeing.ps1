@@ -213,6 +213,8 @@ function Initialize-TrayIcon {
 }
 
 $script:ForceClose = $false
+$script:BlockedByLimit = @{}
+$script:LimitNotifyCooldown = @{}
 
 # ── Win32 API for Foreground Window Detection & Global Hotkey ──
 try {
@@ -394,8 +396,12 @@ function Update-UsageTracking {
     $script:LastCheckTime = $now
     $script:TotalScreenTimeToday += $elapsed
 
+    # Enforce blocked apps every cycle
+    Enforce-BlockedApps
+
     $fg = Get-ForegroundApp
     $appName = $fg.Name
+    $procName = $fg.ProcessName
 
     if ($appName -and $appName -ne "Unknown" -and $appName -ne "Idle") {
         if (-not $script:CurrentAppUsage.ContainsKey($appName)) {
@@ -412,8 +418,8 @@ function Update-UsageTracking {
             $todayData.$appName += $elapsed
         }
 
-        # Check time limits
-        Check-TimeLimits -AppName $appName
+        # Check time limits (auto-close + block reopen)
+        Check-TimeLimits -AppName $appName -ProcessName $procName
 
         # Check parental controls
         Check-ParentalControls -AppName $appName
@@ -426,20 +432,73 @@ function Update-UsageTracking {
 }
 
 function Check-TimeLimits {
-    param([string]$AppName)
+    param([string]$AppName, [string]$ProcessName)
     if ($script:Limits.PSObject -and $script:Limits.PSObject.Properties[$AppName]) {
         $limitMin = $script:Limits.$AppName
         $usedSec = $script:CurrentAppUsage[$AppName]
         $usedMin = [math]::Floor($usedSec / 60)
 
         if ($limitMin -gt 0 -and $usedMin -ge $limitMin) {
-            if ($script:Config.NotificationsEnabled) {
-                Show-Notification -Title "Time Limit Reached" -Message "$AppName has reached its daily limit of $limitMin minutes." -Type "Warning"
+            # Add to blocked list so reopening is blocked
+            if (-not $script:BlockedByLimit.ContainsKey($ProcessName)) {
+                $script:BlockedByLimit[$ProcessName] = $AppName
+            }
+            # Kill the app
+            try {
+                Get-Process -Name $ProcessName -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+            } catch { }
+            # Notify (with 60s cooldown per app)
+            $now = Get-Date
+            $lastNotify = $script:LimitNotifyCooldown[$AppName]
+            if (-not $lastNotify -or ($now - $lastNotify).TotalSeconds -ge 60) {
+                $script:LimitNotifyCooldown[$AppName] = $now
+                if ($script:Config.NotificationsEnabled) {
+                    Show-Notification -Title "Time Limit Reached" -Message "$AppName has been closed. Daily limit of $limitMin minutes reached." -Type "Warning"
+                }
             }
         } elseif ($limitMin -gt 0 -and $usedMin -ge ($limitMin - 5) -and $usedMin -lt $limitMin) {
-            if ($script:Config.NotificationsEnabled) {
-                Show-Notification -Title "Time Limit Warning" -Message "$AppName has $($limitMin - $usedMin) minutes remaining." -Type "Info"
+            $now = Get-Date
+            $warnKey = "${AppName}_warn"
+            $lastWarn = $script:LimitNotifyCooldown[$warnKey]
+            if (-not $lastWarn -or ($now - $lastWarn).TotalSeconds -ge 60) {
+                $script:LimitNotifyCooldown[$warnKey] = $now
+                if ($script:Config.NotificationsEnabled) {
+                    Show-Notification -Title "Time Limit Warning" -Message "$AppName has $($limitMin - $usedMin) minutes remaining." -Type "Info"
+                }
             }
+        }
+    }
+}
+
+function Enforce-BlockedApps {
+    if ($script:BlockedByLimit.Count -eq 0) { return }
+    foreach ($procName in @($script:BlockedByLimit.Keys)) {
+        $appName = $script:BlockedByLimit[$procName]
+        # Verify the limit is still exceeded (in case data was reset)
+        $stillBlocked = $false
+        if ($script:Limits.PSObject -and $script:Limits.PSObject.Properties[$appName]) {
+            $limitMin = $script:Limits.$appName
+            $usedSec = if ($script:CurrentAppUsage.ContainsKey($appName)) { $script:CurrentAppUsage[$appName] } else { 0 }
+            $usedMin = [math]::Floor($usedSec / 60)
+            if ($limitMin -gt 0 -and $usedMin -ge $limitMin) {
+                $stillBlocked = $true
+            }
+        }
+        if ($stillBlocked) {
+            try {
+                $running = Get-Process -Name $procName -ErrorAction SilentlyContinue
+                if ($running) {
+                    $running | Stop-Process -Force -ErrorAction SilentlyContinue
+                    $now = Get-Date
+                    $lastNotify = $script:LimitNotifyCooldown[$appName]
+                    if (-not $lastNotify -or ($now - $lastNotify).TotalSeconds -ge 60) {
+                        $script:LimitNotifyCooldown[$appName] = $now
+                        Show-Notification -Title "App Blocked" -Message "$appName is blocked. Daily time limit reached." -Type "Warning"
+                    }
+                }
+            } catch { }
+        } else {
+            $script:BlockedByLimit.Remove($procName)
         }
     }
 }
@@ -2595,10 +2654,16 @@ function Update-LimitsList {
             $usedMin = [math]::Floor($usedSec / 60)
             $pctUsed = if ($limitMin -gt 0) { [math]::Min([math]::Round(($usedMin / $limitMin) * 100), 100) } else { 0 }
 
+            $isBlocked = $script:BlockedByLimit.Values -contains $appName
             $detailText = New-Object System.Windows.Controls.TextBlock
-            $detailText.Text = "$usedMin / $limitMin min ($pctUsed%)"
+            if ($isBlocked) {
+                $detailText.Text = "BLOCKED - $usedMin / $limitMin min"
+                $detailText.Foreground = $window.FindResource("DangerBrush")
+            } else {
+                $detailText.Text = "$usedMin / $limitMin min ($pctUsed%)"
+                $detailText.Foreground = $window.FindResource("TextSecondaryBrush")
+            }
             $detailText.FontSize = 11
-            $detailText.Foreground = $window.FindResource("TextSecondaryBrush")
             $sp.Children.Add($detailText)
             [System.Windows.Controls.Grid]::SetColumn($sp, 0)
             $grid.Children.Add($sp)
@@ -2649,6 +2714,9 @@ function Update-LimitsList {
                 param($sender, $e)
                 $name = $sender.Tag
                 $script:Limits.PSObject.Properties.Remove($name)
+                # Unblock the app if it was blocked
+                $toRemove = @($script:BlockedByLimit.Keys | Where-Object { $script:BlockedByLimit[$_] -eq $name })
+                foreach ($key in $toRemove) { $script:BlockedByLimit.Remove($key) }
                 Save-JsonData -Path $LimitsFile -Data $script:Limits
                 Update-LimitsList
             })
