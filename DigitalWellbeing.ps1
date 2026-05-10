@@ -24,9 +24,24 @@ param(
     [switch]$Background
 )
 
+# ── Hide Console Window ──
+# Hides the CMD/PowerShell console window so only the GUI is visible
+Add-Type -Name ConsoleWindow -Namespace Win32Helper -MemberDefinition @"
+    [DllImport("kernel32.dll")]
+    public static extern IntPtr GetConsoleWindow();
+    [DllImport("user32.dll")]
+    public static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+"@ -ErrorAction SilentlyContinue
+try {
+    $consoleHwnd = [Win32Helper.ConsoleWindow]::GetConsoleWindow()
+    if ($consoleHwnd -ne [IntPtr]::Zero) {
+        [Win32Helper.ConsoleWindow]::ShowWindow($consoleHwnd, 0) | Out-Null  # SW_HIDE = 0
+    }
+} catch { }
+
 # ── Elevate to Administrator if needed ──
 if ($RunAsAdmin -and -not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
-    Start-Process powershell.exe "-ExecutionPolicy Bypass -File `"$PSCommandPath`" -RunAsAdmin" -Verb RunAs
+    Start-Process powershell.exe "-ExecutionPolicy Bypass -WindowStyle Hidden -File `"$PSCommandPath`" -RunAsAdmin" -Verb RunAs
     exit
 }
 
