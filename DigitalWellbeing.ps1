@@ -137,16 +137,18 @@ try {
             [DllImport("user32.dll", CharSet = CharSet.Unicode)]
             public static extern int GetWindowText(IntPtr hWnd, StringBuilder text, int count);
         }
-        public class HotKeyHelper {
+        public class KeyboardHelper {
             [DllImport("user32.dll")]
-            public static extern bool RegisterHotKey(IntPtr hWnd, int id, uint fsModifiers, uint vk);
-            [DllImport("user32.dll")]
-            public static extern bool UnregisterHotKey(IntPtr hWnd, int id);
-            public const uint MOD_CONTROL = 0x0002;
-            public const uint MOD_SHIFT = 0x0004;
-            public const uint MOD_NOREPEAT = 0x4000;
-            public const uint VK_D = 0x44;
-            public const int HOTKEY_ID = 9000;
+            public static extern short GetAsyncKeyState(int vKey);
+            public const int VK_CONTROL = 0x11;
+            public const int VK_SHIFT = 0x10;
+            public const int VK_D = 0x44;
+
+            public static bool IsCtrlShiftDPressed() {
+                return (GetAsyncKeyState(VK_CONTROL) & 0x8000) != 0
+                    && (GetAsyncKeyState(VK_SHIFT) & 0x8000) != 0
+                    && (GetAsyncKeyState(VK_D) & 0x8000) != 0;
+            }
         }
 "@ -ErrorAction SilentlyContinue
 } catch { }
@@ -2763,38 +2765,27 @@ Update-Dashboard
 Initialize-TrayIcon
 
 # ── Global Hotkey: Ctrl+Shift+D to bring app to foreground ──
-$script:HotkeyRegistered = $false
-
-$window.Add_SourceInitialized({
+# Uses GetAsyncKeyState polling via a dedicated timer (works even when window is hidden)
+$script:HotkeyTimer = New-Object System.Windows.Threading.DispatcherTimer
+$script:HotkeyTimer.Interval = [TimeSpan]::FromMilliseconds(300)
+$script:HotkeyWasPressed = $false
+$script:HotkeyTimer.Add_Tick({
     try {
-        $helper = [System.Windows.Interop.WindowInteropHelper]::new($window)
-        $hwnd = $helper.Handle
-
-        # Register Ctrl+Shift+D hotkey
-        $modifiers = [HotKeyHelper]::MOD_CONTROL -bor [HotKeyHelper]::MOD_SHIFT -bor [HotKeyHelper]::MOD_NOREPEAT
-        $result = [HotKeyHelper]::RegisterHotKey($hwnd, [HotKeyHelper]::HOTKEY_ID, $modifiers, [HotKeyHelper]::VK_D)
-        if ($result) {
-            $script:HotkeyRegistered = $true
+        $pressed = [KeyboardHelper]::IsCtrlShiftDPressed()
+        if ($pressed -and -not $script:HotkeyWasPressed) {
+            # Key combo just pressed — bring window to foreground
+            $window.Show()
+            $window.ShowInTaskbar = $true
+            $window.WindowState = 'Normal'
+            $window.Activate()
+            $window.Topmost = $true
+            $window.Topmost = $false
+            if ($script:TrayIcon) { $script:TrayIcon.Visible = $false }
         }
-
-        # Add WndProc hook for hotkey message (WM_HOTKEY = 0x0312)
-        $source = [System.Windows.Interop.HwndSource]::FromHwnd($hwnd)
-        $source.AddHook({
-            param($hwnd, $msg, $wParam, $lParam, [ref]$handled)
-            if ($msg -eq 0x0312 -and $wParam.ToInt32() -eq [HotKeyHelper]::HOTKEY_ID) {
-                $window.Show()
-                $window.ShowInTaskbar = $true
-                $window.WindowState = 'Normal'
-                $window.Activate()
-                $window.Topmost = $true
-                $window.Topmost = $false
-                if ($script:TrayIcon) { $script:TrayIcon.Visible = $false }
-                $handled.Value = $true
-            }
-            return [IntPtr]::Zero
-        })
+        $script:HotkeyWasPressed = $pressed
     } catch { }
 })
+$script:HotkeyTimer.Start()
 
 # Background mode: start minimized to tray (for Windows startup)
 if ($Background) {
@@ -2809,15 +2800,7 @@ $window.ShowDialog() | Out-Null
 
 # Cleanup
 if ($script:TrackingTimer) { $script:TrackingTimer.Stop() }
-
-# Unregister hotkey
-if ($script:HotkeyRegistered) {
-    try {
-        $helper = [System.Windows.Interop.WindowInteropHelper]::new($window)
-        [HotKeyHelper]::UnregisterHotKey($helper.Handle, [HotKeyHelper]::HOTKEY_ID) | Out-Null
-    } catch { }
-}
-
+if ($script:HotkeyTimer) { $script:HotkeyTimer.Stop() }
 if ($script:TrayIcon) {
     $script:TrayIcon.Visible = $false
     $script:TrayIcon.Dispose()
