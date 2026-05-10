@@ -488,7 +488,7 @@ function Get-AppIcon {
         <!-- Nav Button Style -->
         <Style x:Key="NavButtonStyle" TargetType="Button">
             <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Padding" Value="16,12"/>
             <Setter Property="HorizontalContentAlignment" Value="Left"/>
@@ -504,8 +504,8 @@ function Get-AppIcon {
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="{StaticResource CardHoverBrush}"/>
-                                <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+                                <Setter TargetName="border" Property="Background" Value="{DynamicResource CardHoverBrush}"/>
+                                <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -516,12 +516,12 @@ function Get-AppIcon {
         <!-- Nav Button Active Style -->
         <Style x:Key="NavButtonActiveStyle" TargetType="Button" BasedOn="{StaticResource NavButtonStyle}">
             <Setter Property="Background" Value="{StaticResource PrimaryBrush}"/>
-            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
         </Style>
 
         <!-- Card Style -->
         <Style x:Key="CardStyle" TargetType="Border">
-            <Setter Property="Background" Value="{StaticResource CardBrush}"/>
+            <Setter Property="Background" Value="{DynamicResource CardBrush}"/>
             <Setter Property="CornerRadius" Value="12"/>
             <Setter Property="Padding" Value="20"/>
             <Setter Property="Margin" Value="0,0,0,12"/>
@@ -578,9 +578,9 @@ function Get-AppIcon {
 
         <!-- TextBox Style -->
         <Style x:Key="ModernTextBox" TargetType="TextBox">
-            <Setter Property="Background" Value="{StaticResource BgSecondaryBrush}"/>
-            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
-            <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+            <Setter Property="Background" Value="{DynamicResource BgSecondaryBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Padding" Value="12,8"/>
             <Setter Property="FontSize" Value="13"/>
@@ -602,9 +602,9 @@ function Get-AppIcon {
 
         <!-- PasswordBox Style -->
         <Style x:Key="ModernPasswordBox" TargetType="PasswordBox">
-            <Setter Property="Background" Value="{StaticResource BgSecondaryBrush}"/>
-            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
-            <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+            <Setter Property="Background" Value="{DynamicResource BgSecondaryBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Padding" Value="12,8"/>
             <Setter Property="FontSize" Value="14"/>
@@ -691,8 +691,8 @@ function Get-AppIcon {
     </Window.Resources>
 
     <!-- Main Window Border with Shadow -->
-    <Border Background="{StaticResource BgBrush}" CornerRadius="16"
-            BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+    <Border Background="{DynamicResource BgBrush}" CornerRadius="16"
+            BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1">
         <Border.Effect>
             <DropShadowEffect BlurRadius="20" ShadowDepth="0" Opacity="0.3" Color="Black"/>
         </Border.Effect>
@@ -703,26 +703,26 @@ function Get-AppIcon {
             </Grid.RowDefinitions>
 
             <!-- Title Bar -->
-            <Border Grid.Row="0" Background="{StaticResource BgSecondaryBrush}"
+            <Border Grid.Row="0" Background="{DynamicResource BgSecondaryBrush}"
                     CornerRadius="16,16,0,0" Name="TitleBar">
                 <Grid>
                     <StackPanel Orientation="Horizontal" Margin="16,0,0,0" VerticalAlignment="Center">
                         <TextBlock Text="&#xE909;" FontFamily="Segoe MDL2 Assets" FontSize="14"
                                    Foreground="{StaticResource PrimaryBrush}" VerticalAlignment="Center" Margin="0,0,8,0"/>
                         <TextBlock Text="Digital Wellbeing" FontFamily="Segoe UI Semibold" FontSize="13"
-                                   Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                                   Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
                         <TextBlock Text=" v1.0" FontSize="10"
-                                   Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center"/>
+                                   Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center"/>
                     </StackPanel>
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,8,0">
                         <Button Name="MinBtn" Content="&#xE921;" FontFamily="Segoe MDL2 Assets" FontSize="10"
-                                Width="36" Height="32" Background="Transparent" Foreground="{StaticResource TextSecondaryBrush}"
+                                Width="36" Height="32" Background="Transparent" Foreground="{DynamicResource TextSecondaryBrush}"
                                 BorderThickness="0" Cursor="Hand"/>
                         <Button Name="MaxBtn" Content="&#xE922;" FontFamily="Segoe MDL2 Assets" FontSize="10"
-                                Width="36" Height="32" Background="Transparent" Foreground="{StaticResource TextSecondaryBrush}"
+                                Width="36" Height="32" Background="Transparent" Foreground="{DynamicResource TextSecondaryBrush}"
                                 BorderThickness="0" Cursor="Hand"/>
                         <Button Name="CloseBtn" Content="&#xE8BB;" FontFamily="Segoe MDL2 Assets" FontSize="10"
-                                Width="36" Height="32" Background="Transparent" Foreground="{StaticResource TextSecondaryBrush}"
+                                Width="36" Height="32" Background="Transparent" Foreground="{DynamicResource TextSecondaryBrush}"
                                 BorderThickness="0" Cursor="Hand"/>
                     </StackPanel>
                 </Grid>
@@ -736,7 +736,7 @@ function Get-AppIcon {
                 </Grid.ColumnDefinitions>
 
                 <!-- Sidebar Navigation -->
-                <Border Grid.Column="0" Background="{StaticResource BgSecondaryBrush}"
+                <Border Grid.Column="0" Background="{DynamicResource BgSecondaryBrush}"
                         CornerRadius="0,0,0,16" Padding="8,16">
                     <DockPanel>
                         <!-- User Profile Area -->
@@ -752,16 +752,16 @@ function Get-AppIcon {
                             <TextBlock Text="&#xE77B;" FontFamily="Segoe MDL2 Assets" FontSize="24"
                                        Foreground="White" HorizontalAlignment="Center" Margin="0,-42,0,0"/>
                             <TextBlock Name="UserNameText" Text="User" FontSize="14" FontFamily="Segoe UI Semibold"
-                                       Foreground="{StaticResource TextPrimaryBrush}" HorizontalAlignment="Center"
+                                       Foreground="{DynamicResource TextPrimaryBrush}" HorizontalAlignment="Center"
                                        Margin="0,20,0,2"/>
                             <TextBlock Name="ScreenTimeLabel" Text="0h 0m screen time today"
-                                       FontSize="11" Foreground="{StaticResource TextSecondaryBrush}"
+                                       FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}"
                                        HorizontalAlignment="Center"/>
                         </StackPanel>
 
                         <!-- Nav Buttons -->
                         <StackPanel DockPanel.Dock="Top">
-                            <TextBlock Text="MENU" FontSize="10" Foreground="{StaticResource TextSecondaryBrush}"
+                            <TextBlock Text="MENU" FontSize="10" Foreground="{DynamicResource TextSecondaryBrush}"
                                        FontFamily="Segoe UI Semibold" Margin="16,0,0,8"/>
                             <Button Name="NavDashboard" Style="{StaticResource NavButtonActiveStyle}">
                                 <StackPanel Orientation="Horizontal">
@@ -794,7 +794,7 @@ function Get-AppIcon {
                                 </StackPanel>
                             </Button>
 
-                            <TextBlock Text="SYSTEM" FontSize="10" Foreground="{StaticResource TextSecondaryBrush}"
+                            <TextBlock Text="SYSTEM" FontSize="10" Foreground="{DynamicResource TextSecondaryBrush}"
                                        FontFamily="Segoe UI Semibold" Margin="16,20,0,8"/>
                             <Button Name="NavSettings" Style="{StaticResource NavButtonStyle}">
                                 <StackPanel Orientation="Horizontal">
@@ -812,15 +812,15 @@ function Get-AppIcon {
 
                         <!-- Tracking Status -->
                         <StackPanel DockPanel.Dock="Bottom" VerticalAlignment="Bottom" Margin="8,0">
-                            <Border Background="{StaticResource CardBrush}" CornerRadius="10" Padding="12,10">
+                            <Border Background="{DynamicResource CardBrush}" CornerRadius="10" Padding="12,10">
                                 <StackPanel>
                                     <StackPanel Orientation="Horizontal">
                                         <Ellipse Name="TrackingIndicator" Width="8" Height="8" Fill="{StaticResource SuccessBrush}" Margin="0,0,8,0"/>
                                         <TextBlock Name="TrackingStatusText" Text="Tracking Active" FontSize="11"
-                                                   Foreground="{StaticResource TextPrimaryBrush}"/>
+                                                   Foreground="{DynamicResource TextPrimaryBrush}"/>
                                     </StackPanel>
                                     <TextBlock Name="TrackingDetailText" Text="Monitoring apps..." FontSize="10"
-                                               Foreground="{StaticResource TextSecondaryBrush}" Margin="16,4,0,0"/>
+                                               Foreground="{DynamicResource TextSecondaryBrush}" Margin="16,4,0,0"/>
                                 </StackPanel>
                             </Border>
                         </StackPanel>
@@ -834,9 +834,9 @@ function Get-AppIcon {
                         <ScrollViewer Name="PageDashboard" VerticalScrollBarVisibility="Auto">
                             <StackPanel>
                                 <TextBlock Text="Dashboard" FontSize="24" FontFamily="Segoe UI Bold"
-                                           Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,4"/>
+                                           Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,4"/>
                                 <TextBlock Name="DashboardDateText" Text="Today" FontSize="13"
-                                           Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,20"/>
+                                           Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,20"/>
 
                                 <!-- Stats Cards Row -->
                                 <UniformGrid Columns="4" Margin="0,0,0,16">
@@ -850,9 +850,9 @@ function Get-AppIcon {
                                                 </Border>
                                                 <StackPanel VerticalAlignment="Center">
                                                     <TextBlock Text="Screen Time" FontSize="11"
-                                                               Foreground="{StaticResource TextSecondaryBrush}"/>
+                                                               Foreground="{DynamicResource TextSecondaryBrush}"/>
                                                     <TextBlock Name="DashScreenTime" Text="0h 0m" FontSize="20"
-                                                               FontFamily="Segoe UI Bold" Foreground="{StaticResource TextPrimaryBrush}"/>
+                                                               FontFamily="Segoe UI Bold" Foreground="{DynamicResource TextPrimaryBrush}"/>
                                                 </StackPanel>
                                             </StackPanel>
                                         </StackPanel>
@@ -867,9 +867,9 @@ function Get-AppIcon {
                                                 </Border>
                                                 <StackPanel VerticalAlignment="Center">
                                                     <TextBlock Text="Apps Used" FontSize="11"
-                                                               Foreground="{StaticResource TextSecondaryBrush}"/>
+                                                               Foreground="{DynamicResource TextSecondaryBrush}"/>
                                                     <TextBlock Name="DashAppsCount" Text="0" FontSize="20"
-                                                               FontFamily="Segoe UI Bold" Foreground="{StaticResource TextPrimaryBrush}"/>
+                                                               FontFamily="Segoe UI Bold" Foreground="{DynamicResource TextPrimaryBrush}"/>
                                                 </StackPanel>
                                             </StackPanel>
                                         </StackPanel>
@@ -884,9 +884,9 @@ function Get-AppIcon {
                                                 </Border>
                                                 <StackPanel VerticalAlignment="Center">
                                                     <TextBlock Text="Limits Set" FontSize="11"
-                                                               Foreground="{StaticResource TextSecondaryBrush}"/>
+                                                               Foreground="{DynamicResource TextSecondaryBrush}"/>
                                                     <TextBlock Name="DashLimitsCount" Text="0" FontSize="20"
-                                                               FontFamily="Segoe UI Bold" Foreground="{StaticResource TextPrimaryBrush}"/>
+                                                               FontFamily="Segoe UI Bold" Foreground="{DynamicResource TextPrimaryBrush}"/>
                                                 </StackPanel>
                                             </StackPanel>
                                         </StackPanel>
@@ -901,9 +901,9 @@ function Get-AppIcon {
                                                 </Border>
                                                 <StackPanel VerticalAlignment="Center">
                                                     <TextBlock Text="Parental" FontSize="11"
-                                                               Foreground="{StaticResource TextSecondaryBrush}"/>
+                                                               Foreground="{DynamicResource TextSecondaryBrush}"/>
                                                     <TextBlock Name="DashParentalStatus" Text="Off" FontSize="20"
-                                                               FontFamily="Segoe UI Bold" Foreground="{StaticResource TextPrimaryBrush}"/>
+                                                               FontFamily="Segoe UI Bold" Foreground="{DynamicResource TextPrimaryBrush}"/>
                                                 </StackPanel>
                                             </StackPanel>
                                         </StackPanel>
@@ -921,10 +921,10 @@ function Get-AppIcon {
                                     <Border Grid.Column="0" Style="{StaticResource CardStyle}" Margin="0,0,8,0">
                                         <StackPanel>
                                             <TextBlock Text="Top Applications" FontSize="15" FontFamily="Segoe UI Semibold"
-                                                       Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,16"/>
+                                                       Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,16"/>
                                             <StackPanel Name="DashTopApps">
                                                 <TextBlock Text="No data yet - start using your apps!"
-                                                           Foreground="{StaticResource TextSecondaryBrush}"
+                                                           Foreground="{DynamicResource TextSecondaryBrush}"
                                                            FontSize="12" FontStyle="Italic"/>
                                             </StackPanel>
                                         </StackPanel>
@@ -934,10 +934,10 @@ function Get-AppIcon {
                                     <Border Grid.Column="1" Style="{StaticResource CardStyle}" Margin="8,0,0,0">
                                         <StackPanel>
                                             <TextBlock Text="Usage Breakdown" FontSize="15" FontFamily="Segoe UI Semibold"
-                                                       Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,16"/>
+                                                       Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,16"/>
                                             <Canvas Name="DashChart" Height="200" ClipToBounds="True">
                                                 <TextBlock Text="Collecting data..." Canvas.Left="50" Canvas.Top="90"
-                                                           Foreground="{StaticResource TextSecondaryBrush}" FontStyle="Italic"/>
+                                                           Foreground="{DynamicResource TextSecondaryBrush}" FontStyle="Italic"/>
                                             </Canvas>
                                         </StackPanel>
                                     </Border>
@@ -947,10 +947,10 @@ function Get-AppIcon {
                                 <Border Style="{StaticResource CardStyle}">
                                     <StackPanel>
                                         <TextBlock Text="Currently Running Applications" FontSize="15" FontFamily="Segoe UI Semibold"
-                                                   Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,16"/>
+                                                   Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,16"/>
                                         <StackPanel Name="DashRunningApps">
                                             <TextBlock Text="Scanning for running applications..."
-                                                       Foreground="{StaticResource TextSecondaryBrush}"
+                                                       Foreground="{DynamicResource TextSecondaryBrush}"
                                                        FontSize="12" FontStyle="Italic"/>
                                         </StackPanel>
                                     </StackPanel>
@@ -963,7 +963,7 @@ function Get-AppIcon {
                             <StackPanel>
                                 <Grid Margin="0,0,0,20">
                                     <TextBlock Text="Application Usage" FontSize="24" FontFamily="Segoe UI Bold"
-                                               Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                                               Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
                                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                                         <TextBox Name="AppSearchBox" Width="200" Style="{StaticResource ModernTextBox}"
                                                  FontSize="12" Margin="0,0,8,0"/>
@@ -977,7 +977,7 @@ function Get-AppIcon {
                                 </Grid>
 
                                 <!-- Apps Header -->
-                                <Border Background="{StaticResource BgSecondaryBrush}" CornerRadius="8,8,0,0" Padding="16,10">
+                                <Border Background="{DynamicResource BgSecondaryBrush}" CornerRadius="8,8,0,0" Padding="16,10">
                                     <Grid>
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="40"/>
@@ -987,12 +987,12 @@ function Get-AppIcon {
                                             <ColumnDefinition Width="100"/>
                                             <ColumnDefinition Width="80"/>
                                         </Grid.ColumnDefinitions>
-                                        <TextBlock Grid.Column="0" Text="" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}"/>
-                                        <TextBlock Grid.Column="1" Text="Application" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" FontFamily="Segoe UI Semibold"/>
-                                        <TextBlock Grid.Column="2" Text="Window Title" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" FontFamily="Segoe UI Semibold"/>
-                                        <TextBlock Grid.Column="3" Text="Usage Time" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" FontFamily="Segoe UI Semibold"/>
-                                        <TextBlock Grid.Column="4" Text="Memory" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" FontFamily="Segoe UI Semibold"/>
-                                        <TextBlock Grid.Column="5" Text="Status" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" FontFamily="Segoe UI Semibold"/>
+                                        <TextBlock Grid.Column="0" Text="" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                                        <TextBlock Grid.Column="1" Text="Application" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" FontFamily="Segoe UI Semibold"/>
+                                        <TextBlock Grid.Column="2" Text="Window Title" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" FontFamily="Segoe UI Semibold"/>
+                                        <TextBlock Grid.Column="3" Text="Usage Time" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" FontFamily="Segoe UI Semibold"/>
+                                        <TextBlock Grid.Column="4" Text="Memory" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" FontFamily="Segoe UI Semibold"/>
+                                        <TextBlock Grid.Column="5" Text="Status" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" FontFamily="Segoe UI Semibold"/>
                                     </Grid>
                                 </Border>
 
@@ -1000,18 +1000,18 @@ function Get-AppIcon {
                                 <Border Style="{StaticResource CardStyle}" CornerRadius="0,0,8,8" Margin="0">
                                     <StackPanel Name="AppsListPanel">
                                         <TextBlock Text="Loading applications..."
-                                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                                   Foreground="{DynamicResource TextSecondaryBrush}"
                                                    FontSize="12" FontStyle="Italic" Margin="0,10"/>
                                     </StackPanel>
                                 </Border>
 
                                 <!-- Third-Party Apps Section -->
                                 <TextBlock Text="Third-Party Application Usage" FontSize="18" FontFamily="Segoe UI Semibold"
-                                           Foreground="{StaticResource TextPrimaryBrush}" Margin="0,20,0,12"/>
+                                           Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,20,0,12"/>
                                 <Border Style="{StaticResource CardStyle}">
                                     <StackPanel Name="ThirdPartyAppsPanel">
                                         <TextBlock Text="Detecting third-party applications..."
-                                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                                   Foreground="{DynamicResource TextSecondaryBrush}"
                                                    FontSize="12" FontStyle="Italic"/>
                                     </StackPanel>
                                 </Border>
@@ -1022,15 +1022,15 @@ function Get-AppIcon {
                         <ScrollViewer Name="PageScreenTime" VerticalScrollBarVisibility="Auto" Visibility="Collapsed">
                             <StackPanel>
                                 <TextBlock Text="Screen Time" FontSize="24" FontFamily="Segoe UI Bold"
-                                           Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,4"/>
+                                           Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,4"/>
                                 <TextBlock Text="Monitor your daily and weekly screen usage"
-                                           FontSize="13" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,20"/>
+                                           FontSize="13" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,20"/>
 
                                 <!-- Today's Summary -->
                                 <Border Style="{StaticResource CardStyle}">
                                     <StackPanel>
                                         <TextBlock Text="Today's Screen Time" FontSize="16" FontFamily="Segoe UI Semibold"
-                                                   Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,12"/>
+                                                   Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,12"/>
                                         <Grid>
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="*"/>
@@ -1041,19 +1041,19 @@ function Get-AppIcon {
                                                 <TextBlock Name="STTotalTime" Text="0h 0m" FontSize="32" FontFamily="Segoe UI Bold"
                                                            Foreground="{StaticResource PrimaryBrush}" HorizontalAlignment="Center"/>
                                                 <TextBlock Text="Total Time" FontSize="12"
-                                                           Foreground="{StaticResource TextSecondaryBrush}" HorizontalAlignment="Center"/>
+                                                           Foreground="{DynamicResource TextSecondaryBrush}" HorizontalAlignment="Center"/>
                                             </StackPanel>
                                             <StackPanel Grid.Column="1" HorizontalAlignment="Center">
                                                 <TextBlock Name="STSessionTime" Text="0h 0m" FontSize="32" FontFamily="Segoe UI Bold"
                                                            Foreground="{StaticResource SuccessBrush}" HorizontalAlignment="Center"/>
                                                 <TextBlock Text="Current Session" FontSize="12"
-                                                           Foreground="{StaticResource TextSecondaryBrush}" HorizontalAlignment="Center"/>
+                                                           Foreground="{DynamicResource TextSecondaryBrush}" HorizontalAlignment="Center"/>
                                             </StackPanel>
                                             <StackPanel Grid.Column="2" HorizontalAlignment="Center">
                                                 <TextBlock Name="STAppsUsed" Text="0" FontSize="32" FontFamily="Segoe UI Bold"
                                                            Foreground="{StaticResource WarningBrush}" HorizontalAlignment="Center"/>
                                                 <TextBlock Text="Apps Used" FontSize="12"
-                                                           Foreground="{StaticResource TextSecondaryBrush}" HorizontalAlignment="Center"/>
+                                                           Foreground="{DynamicResource TextSecondaryBrush}" HorizontalAlignment="Center"/>
                                             </StackPanel>
                                         </Grid>
                                     </StackPanel>
@@ -1063,7 +1063,7 @@ function Get-AppIcon {
                                 <Border Style="{StaticResource CardStyle}">
                                     <StackPanel>
                                         <TextBlock Text="This Week's Usage" FontSize="16" FontFamily="Segoe UI Semibold"
-                                                   Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,16"/>
+                                                   Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,16"/>
                                         <Canvas Name="WeeklyChart" Height="220" ClipToBounds="True"/>
                                     </StackPanel>
                                 </Border>
@@ -1072,7 +1072,7 @@ function Get-AppIcon {
                                 <Border Style="{StaticResource CardStyle}">
                                     <StackPanel>
                                         <TextBlock Text="Hourly Activity" FontSize="16" FontFamily="Segoe UI Semibold"
-                                                   Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,16"/>
+                                                   Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,16"/>
                                         <Canvas Name="HourlyChart" Height="160" ClipToBounds="True"/>
                                     </StackPanel>
                                 </Border>
@@ -1083,15 +1083,15 @@ function Get-AppIcon {
                         <ScrollViewer Name="PageLimits" VerticalScrollBarVisibility="Auto" Visibility="Collapsed">
                             <StackPanel>
                                 <TextBlock Text="Time Limits" FontSize="24" FontFamily="Segoe UI Bold"
-                                           Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,4"/>
+                                           Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,4"/>
                                 <TextBlock Text="Set daily usage limits for individual applications"
-                                           FontSize="13" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,20"/>
+                                           FontSize="13" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,20"/>
 
                                 <!-- Add Limit -->
                                 <Border Style="{StaticResource CardStyle}">
                                     <StackPanel>
                                         <TextBlock Text="Add New Limit" FontSize="16" FontFamily="Segoe UI Semibold"
-                                                   Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,16"/>
+                                                   Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,16"/>
                                         <Grid>
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="*"/>
@@ -1111,9 +1111,9 @@ function Get-AppIcon {
                                         </Grid>
                                         <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
                                             <TextBlock Text="App process name (e.g., chrome, Code, WINWORD)"
-                                                       FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,30,0"/>
+                                                       FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,30,0"/>
                                             <TextBlock Text="Daily limit in minutes"
-                                                       FontSize="11" Foreground="{StaticResource TextSecondaryBrush}"/>
+                                                       FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}"/>
                                         </StackPanel>
                                     </StackPanel>
                                 </Border>
@@ -1122,10 +1122,10 @@ function Get-AppIcon {
                                 <Border Style="{StaticResource CardStyle}">
                                     <StackPanel>
                                         <TextBlock Text="Active Limits" FontSize="16" FontFamily="Segoe UI Semibold"
-                                                   Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,16"/>
+                                                   Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,16"/>
                                         <StackPanel Name="LimitsListPanel">
                                             <TextBlock Text="No limits set yet. Add a limit above to get started."
-                                                       Foreground="{StaticResource TextSecondaryBrush}"
+                                                       Foreground="{DynamicResource TextSecondaryBrush}"
                                                        FontSize="12" FontStyle="Italic"/>
                                         </StackPanel>
                                     </StackPanel>
@@ -1135,9 +1135,24 @@ function Get-AppIcon {
                                 <Border Style="{StaticResource CardStyle}">
                                     <StackPanel>
                                         <TextBlock Text="Quick Set - Popular Apps" FontSize="16" FontFamily="Segoe UI Semibold"
-                                                   Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,16"/>
+                                                   Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,16"/>
                                         <WrapPanel Name="QuickLimitsPanel">
                                         </WrapPanel>
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- Running Apps List -->
+                                <Border Style="{StaticResource CardStyle}">
+                                    <StackPanel>
+                                        <TextBlock Text="Running Applications" FontSize="16" FontFamily="Segoe UI Semibold"
+                                                   Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,4"/>
+                                        <TextBlock Text="Click an app to set a time limit"
+                                                   FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,12"/>
+                                        <StackPanel Name="LimitsAppListPanel">
+                                            <TextBlock Text="Loading running apps..."
+                                                       Foreground="{DynamicResource TextSecondaryBrush}"
+                                                       FontSize="12" FontStyle="Italic"/>
+                                        </StackPanel>
                                     </StackPanel>
                                 </Border>
                             </StackPanel>
@@ -1147,9 +1162,9 @@ function Get-AppIcon {
                         <ScrollViewer Name="PageParental" VerticalScrollBarVisibility="Auto" Visibility="Collapsed">
                             <StackPanel>
                                 <TextBlock Text="Parental Controls" FontSize="24" FontFamily="Segoe UI Bold"
-                                           Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,4"/>
+                                           Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,4"/>
                                 <TextBlock Text="Manage and restrict device usage for children"
-                                           FontSize="13" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,20"/>
+                                           FontSize="13" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,20"/>
 
                                 <!-- PIN Setup / Lock Screen -->
                                 <Border Name="ParentalLockScreen" Style="{StaticResource CardStyle}" Visibility="Collapsed">
@@ -1157,7 +1172,7 @@ function Get-AppIcon {
                                         <TextBlock Text="&#xE72E;" FontFamily="Segoe MDL2 Assets" FontSize="48"
                                                    Foreground="{StaticResource PrimaryBrush}" HorizontalAlignment="Center" Margin="0,0,0,16"/>
                                         <TextBlock Text="Enter PIN to access Parental Controls" FontSize="16"
-                                                   Foreground="{StaticResource TextPrimaryBrush}" HorizontalAlignment="Center" Margin="0,0,0,20"/>
+                                                   Foreground="{DynamicResource TextPrimaryBrush}" HorizontalAlignment="Center" Margin="0,0,0,20"/>
                                         <PasswordBox Name="PinEntryBox" Style="{StaticResource ModernPasswordBox}"
                                                      Width="200" MaxLength="6" HorizontalAlignment="Center" Margin="0,0,0,16"/>
                                         <Button Name="PinUnlockBtn" Style="{StaticResource ModernButton}"
@@ -1175,9 +1190,9 @@ function Get-AppIcon {
                                             <Grid>
                                                 <StackPanel>
                                                     <TextBlock Text="Parental Controls" FontSize="16" FontFamily="Segoe UI Semibold"
-                                                               Foreground="{StaticResource TextPrimaryBrush}"/>
+                                                               Foreground="{DynamicResource TextPrimaryBrush}"/>
                                                     <TextBlock Text="Enable to restrict and monitor device usage"
-                                                               FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,4,0,0"/>
+                                                               FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,4,0,0"/>
                                                 </StackPanel>
                                                 <CheckBox Name="ParentalEnabledToggle" Style="{StaticResource ToggleSwitch}"
                                                           HorizontalAlignment="Right" VerticalAlignment="Center"/>
@@ -1189,42 +1204,42 @@ function Get-AppIcon {
                                     <Border Style="{StaticResource CardStyle}">
                                         <StackPanel>
                                             <TextBlock Text="PIN Protection" FontSize="16" FontFamily="Segoe UI Semibold"
-                                                       Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,12"/>
+                                                       Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,12"/>
                                             <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
                                                 <TextBlock Text="Set PIN (4-6 digits):" FontSize="13"
-                                                           Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center"
+                                                           Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center"
                                                            Margin="0,0,12,0" Width="140"/>
                                                 <PasswordBox Name="SetPinBox" Style="{StaticResource ModernPasswordBox}"
                                                              Width="150" MaxLength="6" Margin="0,0,8,0"/>
                                                 <Button Name="SetPinBtn" Style="{StaticResource ModernButton}" Content="Set PIN"/>
                                             </StackPanel>
                                             <TextBlock Name="PinStatusText" Text="No PIN set" FontSize="11"
-                                                       Foreground="{StaticResource TextSecondaryBrush}" Margin="0,4,0,0"/>
+                                                       Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,4,0,0"/>
 
                                             <!-- Change PIN Section -->
                                             <Border Name="ChangePinSection" Margin="0,16,0,0" Padding="12"
-                                                    Background="{StaticResource BgSecondaryBrush}" CornerRadius="8"
+                                                    Background="{DynamicResource BgSecondaryBrush}" CornerRadius="8"
                                                     Visibility="Collapsed">
                                                 <StackPanel>
                                                     <TextBlock Text="Change PIN" FontSize="14" FontFamily="Segoe UI Semibold"
-                                                               Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,10"/>
+                                                               Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,10"/>
                                                     <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
                                                         <TextBlock Text="Current PIN:" FontSize="12"
-                                                                   Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center"
+                                                                   Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center"
                                                                    Width="100"/>
                                                         <PasswordBox Name="OldPinBox" Style="{StaticResource ModernPasswordBox}"
                                                                      Width="150" MaxLength="6"/>
                                                     </StackPanel>
                                                     <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
                                                         <TextBlock Text="New PIN:" FontSize="12"
-                                                                   Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center"
+                                                                   Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center"
                                                                    Width="100"/>
                                                         <PasswordBox Name="NewPinBox" Style="{StaticResource ModernPasswordBox}"
                                                                      Width="150" MaxLength="6"/>
                                                     </StackPanel>
                                                     <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
                                                         <TextBlock Text="Confirm PIN:" FontSize="12"
-                                                                   Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center"
+                                                                   Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center"
                                                                    Width="100"/>
                                                         <PasswordBox Name="ConfirmPinBox" Style="{StaticResource ModernPasswordBox}"
                                                                      Width="150" MaxLength="6"/>
@@ -1254,7 +1269,7 @@ function Get-AppIcon {
                                     <Border Style="{StaticResource CardStyle}">
                                         <StackPanel>
                                             <TextBlock Text="Block Applications" FontSize="16" FontFamily="Segoe UI Semibold"
-                                                       Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,12"/>
+                                                       Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,12"/>
                                             <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
                                                 <TextBox Name="BlockAppName" Style="{StaticResource ModernTextBox}"
                                                          Width="300" Margin="0,0,8,0"/>
@@ -1266,10 +1281,10 @@ function Get-AppIcon {
                                                 </Button>
                                             </StackPanel>
                                             <TextBlock Text="Enter process name to block (e.g., chrome, discord, steam)"
-                                                       FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,12"/>
+                                                       FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,12"/>
                                             <StackPanel Name="BlockedAppsPanel">
                                                 <TextBlock Text="No apps blocked"
-                                                           Foreground="{StaticResource TextSecondaryBrush}"
+                                                           Foreground="{DynamicResource TextSecondaryBrush}"
                                                            FontSize="12" FontStyle="Italic"/>
                                             </StackPanel>
                                         </StackPanel>
@@ -1280,20 +1295,20 @@ function Get-AppIcon {
                                         <StackPanel>
                                             <Grid Margin="0,0,0,12">
                                                 <TextBlock Text="Bedtime Schedule" FontSize="16" FontFamily="Segoe UI Semibold"
-                                                           Foreground="{StaticResource TextPrimaryBrush}"/>
+                                                           Foreground="{DynamicResource TextPrimaryBrush}"/>
                                                 <CheckBox Name="BedtimeToggle" Style="{StaticResource ToggleSwitch}"
                                                           HorizontalAlignment="Right"/>
                                             </Grid>
                                             <TextBlock Text="Restrict device usage during bedtime hours"
-                                                       FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,16"/>
+                                                       FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,16"/>
                                             <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
                                                 <TextBlock Text="Start Time:" FontSize="13"
-                                                           Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center"
+                                                           Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center"
                                                            Width="80"/>
                                                 <TextBox Name="BedtimeStartBox" Style="{StaticResource ModernTextBox}"
                                                          Text="22:00" Width="100" Margin="0,0,20,0"/>
                                                 <TextBlock Text="End Time:" FontSize="13"
-                                                           Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center"
+                                                           Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center"
                                                            Width="80"/>
                                                 <TextBox Name="BedtimeEndBox" Style="{StaticResource ModernTextBox}"
                                                          Text="07:00" Width="100"/>
@@ -1307,7 +1322,7 @@ function Get-AppIcon {
                                     <Border Style="{StaticResource CardStyle}">
                                         <StackPanel>
                                             <TextBlock Text="Usage Report" FontSize="16" FontFamily="Segoe UI Semibold"
-                                                       Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,12"/>
+                                                       Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,12"/>
                                             <Button Name="GenerateReportBtn" Style="{StaticResource ModernButton}"
                                                     HorizontalAlignment="Left" Margin="0,0,0,12">
                                                 <StackPanel Orientation="Horizontal">
@@ -1317,7 +1332,7 @@ function Get-AppIcon {
                                             </Button>
                                             <StackPanel Name="ReportPanel">
                                                 <TextBlock Text="Click 'Generate Weekly Report' to create a usage summary."
-                                                           Foreground="{StaticResource TextSecondaryBrush}"
+                                                           Foreground="{DynamicResource TextSecondaryBrush}"
                                                            FontSize="12" FontStyle="Italic"/>
                                             </StackPanel>
                                         </StackPanel>
@@ -1330,19 +1345,19 @@ function Get-AppIcon {
                         <ScrollViewer Name="PageSettings" VerticalScrollBarVisibility="Auto" Visibility="Collapsed">
                             <StackPanel>
                                 <TextBlock Text="Settings" FontSize="24" FontFamily="Segoe UI Bold"
-                                           Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,20"/>
+                                           Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,20"/>
 
                                 <!-- General Settings -->
                                 <Border Style="{StaticResource CardStyle}">
                                     <StackPanel>
                                         <TextBlock Text="General" FontSize="16" FontFamily="Segoe UI Semibold"
-                                                   Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,16"/>
+                                                   Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,16"/>
                                         <Grid Margin="0,0,0,12">
                                             <StackPanel>
                                                 <TextBlock Text="Enable Tracking" FontSize="13"
-                                                           Foreground="{StaticResource TextPrimaryBrush}"/>
+                                                           Foreground="{DynamicResource TextPrimaryBrush}"/>
                                                 <TextBlock Text="Track application usage in the background"
-                                                           FontSize="11" Foreground="{StaticResource TextSecondaryBrush}"/>
+                                                           FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}"/>
                                             </StackPanel>
                                             <CheckBox Name="TrackingToggle" Style="{StaticResource ToggleSwitch}"
                                                       HorizontalAlignment="Right" VerticalAlignment="Center"/>
@@ -1350,9 +1365,9 @@ function Get-AppIcon {
                                         <Grid Margin="0,0,0,12">
                                             <StackPanel>
                                                 <TextBlock Text="Enable Notifications" FontSize="13"
-                                                           Foreground="{StaticResource TextPrimaryBrush}"/>
+                                                           Foreground="{DynamicResource TextPrimaryBrush}"/>
                                                 <TextBlock Text="Show alerts for time limits and reminders"
-                                                           FontSize="11" Foreground="{StaticResource TextSecondaryBrush}"/>
+                                                           FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}"/>
                                             </StackPanel>
                                             <CheckBox Name="NotificationsToggle" Style="{StaticResource ToggleSwitch}"
                                                       HorizontalAlignment="Right" VerticalAlignment="Center"/>
@@ -1360,9 +1375,9 @@ function Get-AppIcon {
                                         <Grid Margin="0,0,0,12">
                                             <StackPanel>
                                                 <TextBlock Text="Minimize to System Tray" FontSize="13"
-                                                           Foreground="{StaticResource TextPrimaryBrush}"/>
+                                                           Foreground="{DynamicResource TextPrimaryBrush}"/>
                                                 <TextBlock Text="Keep running in the background when closed"
-                                                           FontSize="11" Foreground="{StaticResource TextSecondaryBrush}"/>
+                                                           FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}"/>
                                             </StackPanel>
                                             <CheckBox Name="TrayToggle" Style="{StaticResource ToggleSwitch}"
                                                       HorizontalAlignment="Right" VerticalAlignment="Center"/>
@@ -1370,12 +1385,34 @@ function Get-AppIcon {
                                         <Grid Margin="0,0,0,12">
                                             <StackPanel>
                                                 <TextBlock Text="Start with Windows" FontSize="13"
-                                                           Foreground="{StaticResource TextPrimaryBrush}"/>
+                                                           Foreground="{DynamicResource TextPrimaryBrush}"/>
                                                 <TextBlock Text="Auto-start and run in background on Windows login"
-                                                           FontSize="11" Foreground="{StaticResource TextSecondaryBrush}"/>
+                                                           FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}"/>
                                             </StackPanel>
                                             <CheckBox Name="StartupToggle" Style="{StaticResource ToggleSwitch}"
                                                       HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                        </Grid>
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- Theme Settings -->
+                                <Border Style="{StaticResource CardStyle}">
+                                    <StackPanel>
+                                        <TextBlock Text="Appearance" FontSize="16" FontFamily="Segoe UI Semibold"
+                                                   Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,16"/>
+                                        <Grid Margin="0,0,0,12">
+                                            <StackPanel>
+                                                <TextBlock Text="Theme" FontSize="13"
+                                                           Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                                <TextBlock Text="Choose Dark, Light, or follow Windows system setting"
+                                                           FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                                            </StackPanel>
+                                            <ComboBox Name="ThemeComboBox" HorizontalAlignment="Right" VerticalAlignment="Center"
+                                                      Width="160" FontSize="13">
+                                                <ComboBoxItem Content="Dark" IsSelected="True"/>
+                                                <ComboBoxItem Content="Light"/>
+                                                <ComboBoxItem Content="Windows Default"/>
+                                            </ComboBox>
                                         </Grid>
                                     </StackPanel>
                                 </Border>
@@ -1384,9 +1421,9 @@ function Get-AppIcon {
                                 <Border Style="{StaticResource CardStyle}">
                                     <StackPanel>
                                         <TextBlock Text="Data Management" FontSize="16" FontFamily="Segoe UI Semibold"
-                                                   Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,16"/>
+                                                   Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,16"/>
                                         <TextBlock Name="DataPathText" Text="" FontSize="12"
-                                                   Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,12"/>
+                                                   Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,12"/>
                                         <StackPanel Orientation="Horizontal">
                                             <Button Name="ExportDataBtn" Style="{StaticResource ModernButton}" Margin="0,0,8,0">
                                                 <StackPanel Orientation="Horizontal">
@@ -1420,19 +1457,19 @@ function Get-AppIcon {
                                 <TextBlock Text="&#xE909;" FontFamily="Segoe MDL2 Assets" FontSize="36"
                                            Foreground="White" HorizontalAlignment="Center" Margin="0,-58,0,0"/>
                                 <TextBlock Text="Digital Wellbeing" FontSize="28" FontFamily="Segoe UI Bold"
-                                           Foreground="{StaticResource TextPrimaryBrush}" HorizontalAlignment="Center" Margin="0,18,0,4"/>
+                                           Foreground="{DynamicResource TextPrimaryBrush}" HorizontalAlignment="Center" Margin="0,18,0,4"/>
                                 <TextBlock Text="Version 1.0.0" FontSize="14"
-                                           Foreground="{StaticResource TextSecondaryBrush}" HorizontalAlignment="Center" Margin="0,0,0,20"/>
+                                           Foreground="{DynamicResource TextSecondaryBrush}" HorizontalAlignment="Center" Margin="0,0,0,20"/>
 
                                 <Border Style="{StaticResource CardStyle}" MaxWidth="500">
                                     <StackPanel>
                                         <TextBlock Text="A comprehensive digital wellness solution for Windows, built entirely with PowerShell and WPF."
-                                                   FontSize="13" Foreground="{StaticResource TextSecondaryBrush}"
+                                                   FontSize="13" Foreground="{DynamicResource TextSecondaryBrush}"
                                                    TextWrapping="Wrap" TextAlignment="Center" Margin="0,0,0,16"/>
 
                                         <TextBlock Text="Features" FontSize="15" FontFamily="Segoe UI Semibold"
-                                                   Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,8"/>
-                                        <TextBlock FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" Margin="0,0,0,16">
+                                                   Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,8"/>
+                                        <TextBlock FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" TextWrapping="Wrap" Margin="0,0,0,16">
                                             <Run Text="&#x2022; Real-time application usage tracking"/><LineBreak/>
                                             <Run Text="&#x2022; Screen time monitoring with charts"/><LineBreak/>
                                             <Run Text="&#x2022; Per-app time limits with notifications"/><LineBreak/>
@@ -1443,16 +1480,16 @@ function Get-AppIcon {
                                         </TextBlock>
 
                                         <TextBlock Text="Author" FontSize="15" FontFamily="Segoe UI Semibold"
-                                                   Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,8"/>
+                                                   Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,8"/>
                                         <TextBlock Text="Created by Sumit (HackWithSumit)" FontSize="12"
-                                                   Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,4"/>
+                                                   Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,4"/>
                                         <TextBlock Text="github.com/HackWithSumit" FontSize="12"
                                                    Foreground="{StaticResource PrimaryBrush}" Margin="0,0,0,16"/>
 
                                         <TextBlock Text="License" FontSize="15" FontFamily="Segoe UI Semibold"
-                                                   Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,8"/>
+                                                   Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,8"/>
                                         <TextBlock Text="MIT License - Free and Open Source" FontSize="12"
-                                                   Foreground="{StaticResource TextSecondaryBrush}"/>
+                                                   Foreground="{DynamicResource TextSecondaryBrush}"/>
                                     </StackPanel>
                                 </Border>
                             </StackPanel>
@@ -1541,7 +1578,7 @@ function Switch-Page {
         0 { Update-Dashboard }
         1 { Update-AppsList }
         2 { Update-ScreenTime }
-        3 { Update-LimitsList }
+        3 { Update-LimitsList; Update-LimitsAppList }
         4 { Update-ParentalPage }
     }
 }
@@ -2138,6 +2175,136 @@ function Draw-HourlyChart {
     }
 }
 
+# ── Theme System ──
+function Get-WindowsTheme {
+    try {
+        $regPath = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize"
+        $val = Get-ItemProperty -Path $regPath -Name "AppsUseLightTheme" -ErrorAction SilentlyContinue
+        if ($null -ne $val -and $val.AppsUseLightTheme -eq 0) { return "Dark" }
+        return "Light"
+    } catch { return "Dark" }
+}
+
+function Apply-Theme {
+    param([string]$ThemeName)
+
+    $dark = @{
+        BgColor        = "#1A1A2E"; BgSecondaryColor = "#16213E"
+        CardColor      = "#1F2940"; CardHoverColor   = "#263250"
+        TextPrimaryColor = "#FFFFFF"; TextSecondaryColor = "#8892B0"
+        BorderColor    = "#2D3A5C"
+    }
+    $light = @{
+        BgColor        = "#F0F2F5"; BgSecondaryColor = "#FFFFFF"
+        CardColor      = "#FFFFFF"; CardHoverColor   = "#E8EAF0"
+        TextPrimaryColor = "#1A1A2E"; TextSecondaryColor = "#5A6078"
+        BorderColor    = "#D0D4DC"
+    }
+
+    $resolved = $ThemeName
+    if ($ThemeName -eq "Windows Default") {
+        $resolved = Get-WindowsTheme
+    }
+
+    $colors = if ($resolved -eq "Light") { $light } else { $dark }
+
+    $converter = [System.Windows.Media.BrushConverter]::new()
+    foreach ($key in $colors.Keys) {
+        $brushKey = $key -replace 'Color$', 'Brush'
+        $brush = $converter.ConvertFrom($colors[$key])
+        $brush.Freeze()
+        $window.Resources[$brushKey] = $brush
+    }
+
+    # Update window background
+    $bgBrush = $converter.ConvertFrom($colors['BgColor'])
+    $bgBrush.Freeze()
+    $window.Resources["BgBrush"] = $bgBrush
+
+    $script:Config.Theme = $ThemeName
+    Save-JsonData -Path $ConfigFile -Data $script:Config
+}
+
+# ── Running Apps List for Time Limits ──
+function Update-LimitsAppList {
+    $LimitsAppListPanel.Children.Clear()
+
+    $apps = @()
+    if ($script:CurrentAppUsage -and $script:CurrentAppUsage.Count -gt 0) {
+        $apps = $script:CurrentAppUsage.GetEnumerator() | Sort-Object Value -Descending
+    }
+
+    if ($apps.Count -eq 0) {
+        $emptyText = New-Object System.Windows.Controls.TextBlock
+        $emptyText.Text = "No tracked apps yet. Usage data will appear as you use applications."
+        $emptyText.Foreground = $window.FindResource("TextSecondaryBrush")
+        $emptyText.FontSize = 12
+        $emptyText.FontStyle = 'Italic'
+        $LimitsAppListPanel.Children.Add($emptyText)
+        return
+    }
+
+    foreach ($app in $apps) {
+        $appName = $app.Key
+        $usageSec = $app.Value
+        $usageMin = [math]::Floor($usageSec / 60)
+        $usageStr = if ($usageMin -ge 60) { "{0}h {1}m" -f [math]::Floor($usageMin / 60), ($usageMin % 60) } else { "${usageMin}m" }
+
+        $border = New-Object System.Windows.Controls.Border
+        $border.Background = $window.FindResource("BgSecondaryBrush")
+        $border.CornerRadius = [System.Windows.CornerRadius]::new(6)
+        $border.Padding = [System.Windows.Thickness]::new(12, 8, 12, 8)
+        $border.Margin = [System.Windows.Thickness]::new(0, 0, 0, 4)
+
+        $grid = New-Object System.Windows.Controls.Grid
+        $c1 = New-Object System.Windows.Controls.ColumnDefinition
+        $c1.Width = [System.Windows.GridLength]::new(1, [System.Windows.GridUnitType]::Star)
+        $c2 = New-Object System.Windows.Controls.ColumnDefinition
+        $c2.Width = [System.Windows.GridLength]::new(80)
+        $c3 = New-Object System.Windows.Controls.ColumnDefinition
+        $c3.Width = [System.Windows.GridLength]::new(100)
+        $grid.ColumnDefinitions.Add($c1)
+        $grid.ColumnDefinitions.Add($c2)
+        $grid.ColumnDefinitions.Add($c3)
+
+        $nameText = New-Object System.Windows.Controls.TextBlock
+        $nameText.Text = $appName
+        $nameText.FontSize = 12
+        $nameText.Foreground = $window.FindResource("TextPrimaryBrush")
+        $nameText.VerticalAlignment = 'Center'
+        [System.Windows.Controls.Grid]::SetColumn($nameText, 0)
+
+        $usageText = New-Object System.Windows.Controls.TextBlock
+        $usageText.Text = $usageStr
+        $usageText.FontSize = 11
+        $usageText.Foreground = $window.FindResource("TextSecondaryBrush")
+        $usageText.VerticalAlignment = 'Center'
+        $usageText.HorizontalAlignment = 'Center'
+        [System.Windows.Controls.Grid]::SetColumn($usageText, 1)
+
+        $setBtn = New-Object System.Windows.Controls.Button
+        $setBtn.Content = "Set Limit"
+        $setBtn.Style = $window.FindResource("ModernButton")
+        $setBtn.FontSize = 11
+        $setBtn.Padding = [System.Windows.Thickness]::new(8, 2, 8, 2)
+        $setBtn.Tag = $appName
+        [System.Windows.Controls.Grid]::SetColumn($setBtn, 2)
+
+        $setBtn.Add_Click({
+            param($sender, $e)
+            $clickedApp = $sender.Tag
+            $LimitAppName.Text = $clickedApp
+            $LimitMinutes.Focus()
+        })
+
+        $grid.Children.Add($nameText)
+        $grid.Children.Add($usageText)
+        $grid.Children.Add($setBtn)
+        $border.Child = $grid
+        $LimitsAppListPanel.Children.Add($border)
+    }
+}
+
 # ── Time Limits Page ──
 function Update-LimitsList {
     $LimitsListPanel.Children.Clear()
@@ -2696,6 +2863,29 @@ $StartupToggle.Add_Unchecked({
     $script:Config.StartWithWindows = $false
     Set-WindowsStartup -Enable $false
     Save-JsonData -Path $ConfigFile -Data $script:Config
+})
+
+# Theme ComboBox - set initial value from config and handle changes
+$savedTheme = $script:Config.Theme
+if ($savedTheme) {
+    foreach ($item in $ThemeComboBox.Items) {
+        if ($item.Content -eq $savedTheme) {
+            $ThemeComboBox.SelectedItem = $item
+            break
+        }
+    }
+}
+
+# Apply saved theme on startup
+if ($savedTheme -and $savedTheme -ne "Dark") {
+    Apply-Theme $savedTheme
+}
+
+$ThemeComboBox.Add_SelectionChanged({
+    $selected = $ThemeComboBox.SelectedItem.Content
+    if ($selected) {
+        Apply-Theme $selected
+    }
 })
 
 $ExportDataBtn.Add_Click({
