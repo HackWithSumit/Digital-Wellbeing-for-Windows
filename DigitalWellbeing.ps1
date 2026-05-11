@@ -2020,11 +2020,25 @@ function Switch-Page {
     if ($script:CurrentTheme) {
         $converter = [System.Windows.Media.BrushConverter]::new()
         for ($i = 0; $i -lt $script:NavButtons.Count; $i++) {
-            if ($i -eq $Index) {
-                $script:NavButtons[$i].Foreground = $converter.ConvertFrom("#FFFFFF")
+            $fgBrush = if ($i -eq $Index) {
+                $converter.ConvertFrom("#FFFFFF")
             } else {
-                $script:NavButtons[$i].Foreground = $converter.ConvertFrom($script:CurrentTheme['TextSecondaryColor'])
+                $converter.ConvertFrom($script:CurrentTheme['TextSecondaryColor'])
             }
+            $script:NavButtons[$i].Foreground = $fgBrush
+            # Explicitly walk button visual tree to update child TextBlocks
+            function Set-ChildTextForeground {
+                param($el, $brush)
+                if ($el -is [System.Windows.Controls.TextBlock]) {
+                    $el.Foreground = $brush
+                }
+                $cnt = [System.Windows.Media.VisualTreeHelper]::GetChildrenCount($el)
+                for ($k = 0; $k -lt $cnt; $k++) {
+                    $ch = [System.Windows.Media.VisualTreeHelper]::GetChild($el, $k)
+                    Set-ChildTextForeground $ch $brush
+                }
+            }
+            try { Set-ChildTextForeground $script:NavButtons[$i] $fgBrush } catch { }
         }
     }
 
@@ -2853,16 +2867,29 @@ function Apply-Theme {
     $script:CurrentTheme = $colors
     $converter = [System.Windows.Media.BrushConverter]::new()
 
-    # Build new brushes and update all window resources
+    # Update Color resources and modify existing Brush resources in-place
     $script:ThemeBrushes = @{}
     $themeKeys = @('BgColor','BgSecondaryColor','CardColor','CardHoverColor','TextPrimaryColor','TextSecondaryColor','BorderColor')
     foreach ($key in $themeKeys) {
         $brushKey = $key -replace 'Color$', 'Brush'
         $newColor = [System.Windows.Media.ColorConverter]::ConvertFromString($colors[$key])
-        $newBrush = New-Object System.Windows.Media.SolidColorBrush($newColor)
-        $script:ThemeBrushes[$brushKey] = $newBrush
         $window.Resources[$key] = $newColor
-        $window.Resources[$brushKey] = $newBrush
+        # Try to modify existing brush Color in-place (updates StaticResource references)
+        $existingBrush = $window.Resources[$brushKey]
+        if ($existingBrush -is [System.Windows.Media.SolidColorBrush]) {
+            try {
+                $existingBrush.Color = $newColor
+                $script:ThemeBrushes[$brushKey] = $existingBrush
+            } catch {
+                $newBrush = New-Object System.Windows.Media.SolidColorBrush($newColor)
+                $window.Resources[$brushKey] = $newBrush
+                $script:ThemeBrushes[$brushKey] = $newBrush
+            }
+        } else {
+            $newBrush = New-Object System.Windows.Media.SolidColorBrush($newColor)
+            $window.Resources[$brushKey] = $newBrush
+            $script:ThemeBrushes[$brushKey] = $newBrush
+        }
     }
 
     # Known dark and light foreground hex values
@@ -2910,6 +2937,58 @@ function Apply-Theme {
         $StatIcon2Bg.Background = $converter.ConvertFrom($colors['StatIcon2Bg'])
         $StatIcon3Bg.Background = $converter.ConvertFrom($colors['StatIcon3Bg'])
         $StatIcon4Bg.Background = $converter.ConvertFrom($colors['StatIcon4Bg'])
+    } catch { }
+
+    # Sidebar text elements
+    try {
+        $UserNameText.Foreground = $converter.ConvertFrom($colors['TextPrimaryColor'])
+        $ScreenTimeLabel.Foreground = $converter.ConvertFrom($colors['TextSecondaryColor'])
+    } catch { }
+
+    # Nav button foreground colors (icons + text) - walk into visual tree
+    $navSecondaryBrush = $converter.ConvertFrom($colors['TextSecondaryColor'])
+    foreach ($btn in $script:NavButtons) {
+        try {
+            $btn.Foreground = $navSecondaryBrush
+            function Set-BtnChildFg {
+                param($el, $brush)
+                if ($el -is [System.Windows.Controls.TextBlock]) {
+                    $el.Foreground = $brush
+                }
+                $cnt = [System.Windows.Media.VisualTreeHelper]::GetChildrenCount($el)
+                for ($k = 0; $k -lt $cnt; $k++) {
+                    $ch = [System.Windows.Media.VisualTreeHelper]::GetChild($el, $k)
+                    Set-BtnChildFg $ch $brush
+                }
+            }
+            Set-BtnChildFg $btn $navSecondaryBrush
+        } catch { }
+    }
+
+    # Also update sidebar section labels ("MENU", "SYSTEM") by walking the sidebar
+    try {
+        $sidebar = $mainBorder.Child.Children[1].Children[0]
+        function Update-SidebarTexts {
+            param($el)
+            if ($el -is [System.Windows.Controls.TextBlock]) {
+                $fg = $el.Foreground
+                if ($fg -is [System.Windows.Media.SolidColorBrush]) {
+                    $hex = $fg.Color.ToString()
+                    if ($script:AllPrimaryFgHexes -contains $hex) {
+                        $el.Foreground = $converter.ConvertFrom($colors['TextPrimaryColor'])
+                    }
+                    elseif ($script:AllSecondaryFgHexes -contains $hex) {
+                        $el.Foreground = $converter.ConvertFrom($colors['TextSecondaryColor'])
+                    }
+                }
+            }
+            $count = [System.Windows.Media.VisualTreeHelper]::GetChildrenCount($el)
+            for ($j = 0; $j -lt $count; $j++) {
+                $child = [System.Windows.Media.VisualTreeHelper]::GetChild($el, $j)
+                Update-SidebarTexts $child
+            }
+        }
+        Update-SidebarTexts $sidebar
     } catch { }
 
     # ─── Visual tree walker ───
