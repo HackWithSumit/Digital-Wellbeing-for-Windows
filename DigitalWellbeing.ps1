@@ -2935,7 +2935,7 @@ function Apply-Theme {
     $cardBrush = $converter.ConvertFrom($colors['CardColor'])
     $borderBrush = $converter.ConvertFrom($colors['BorderColor'])
 
-    # Known dark foreground hex values to detect and remap
+    # Known foreground hex values to detect and remap
     $darkFgHexes = @('#FF1A1A2E','#FF5A6078','#FF000000','#FF808080','#FF333333')
     $lightFgHexes = @('#FFFFFFFF','#FF8892B0','#FFE0E0E0','#FFC0C0C0','#FFCCCCCC')
     $allFgHexes = $darkFgHexes + $lightFgHexes
@@ -3005,7 +3005,7 @@ function Apply-Theme {
         Update-ToggleTracks $window
     } catch { }
 
-    # Fix progress bar track backgrounds on dashboard
+    # Fix progress bar track backgrounds
     try {
         function Update-ProgressBars { param($el)
             if ($el -is [System.Windows.Controls.Border] -and $el.Height -eq 6 -and $el.CornerRadius.TopLeft -ge 2) {
