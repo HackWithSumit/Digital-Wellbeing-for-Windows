@@ -72,18 +72,7 @@ $script:StartupRegName = "DigitalWellbeing"
 $script:TrayIcon = $null
 
 function Get-StartupCommand {
-    # Detect if running as a compiled exe (PS2EXE, etc.)
-    $exePath = [System.Diagnostics.Process]::GetCurrentProcess().MainModule.FileName
-    $isExe = $exePath -and ($exePath -match '\.exe$') -and ($exePath -notmatch 'powershell|pwsh')
-
-    if ($isExe) {
-        return "`"$exePath`" -Background"
-    }
-
-    $scriptPath = if ($PSCommandPath) { $PSCommandPath } elseif ($MyInvocation.ScriptName) { $MyInvocation.ScriptName } else { $script:MyInvocation.MyCommand.Path }
-    if (-not $scriptPath) {
-        $scriptPath = Join-Path $PSScriptRoot "DigitalWellbeing.ps1"
-    }
+    $scriptPath = $PSCommandPath
     return "powershell.exe -ExecutionPolicy Bypass -WindowStyle Hidden -File `"$scriptPath`" -Background"
 }
 
@@ -92,10 +81,6 @@ function Set-WindowsStartup {
     try {
         if ($Enable) {
             $cmd = Get-StartupCommand
-            if (-not (Test-Path $script:StartupRegPath)) {
-                New-Item -Path $script:StartupRegPath -Force | Out-Null
-            }
-            New-ItemProperty -Path $script:StartupRegPath -Name $script:StartupRegName -Value $cmd -PropertyType String -Force -ErrorAction SilentlyContinue | Out-Null
             Set-ItemProperty -Path $script:StartupRegPath -Name $script:StartupRegName -Value $cmd -Force
         } else {
             Remove-ItemProperty -Path $script:StartupRegPath -Name $script:StartupRegName -ErrorAction SilentlyContinue
@@ -105,8 +90,8 @@ function Set-WindowsStartup {
 
 function Test-WindowsStartup {
     try {
-        $val = Get-ItemProperty -Path $script:StartupRegPath -Name $script:StartupRegName -ErrorAction Stop
-        return ($null -ne $val.$($script:StartupRegName))
+        $val = Get-ItemProperty -Path $script:StartupRegPath -Name $script:StartupRegName -ErrorAction SilentlyContinue
+        return ($null -ne $val)
     } catch { return $false }
 }
 
@@ -355,7 +340,6 @@ $script:LastCheckTime = Get-Date
 $script:SessionStart = Get-Date
 $script:TotalScreenTimeToday = 0
 $script:CurrentAppUsage = @{}
-$script:CurrentTheme = $null
 
 function Get-RunningApps {
     $apps = @()
@@ -1101,7 +1085,7 @@ function Get-AppIcon {
         <!-- ProgressBar Style -->
         <Style x:Key="ModernProgressBar" TargetType="ProgressBar">
             <Setter Property="Height" Value="8"/>
-            <Setter Property="Background" Value="{StaticResource BorderBrush}"/>
+            <Setter Property="Background" Value="#2D3A5C"/>
             <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}"/>
             <Setter Property="Template">
                 <Setter.Value>
@@ -1186,9 +1170,7 @@ function Get-AppIcon {
                             <TextBlock Name="ScreenTimeLabel" Text="0h 0m screen time today"
                                        FontSize="11" Foreground="{StaticResource TextSecondaryBrush}"
                                        HorizontalAlignment="Center"/>
-                            <!-- Separator -->
-                            <Border BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1"
-                                    Margin="0,16,0,16"/>
+                            <Border BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1" Margin="0,16,0,16"/>
                         </StackPanel>
 
                         <!-- Nav Buttons -->
@@ -1226,9 +1208,7 @@ function Get-AppIcon {
                                 </StackPanel>
                             </Button>
 
-                            <!-- Separator -->
-                            <Border BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1"
-                                    Margin="4,12,4,12"/>
+                            <Border BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1" Margin="4,12,4,12"/>
                             <TextBlock Text="SYSTEM" FontSize="10" Foreground="{StaticResource TextSecondaryBrush}"
                                        FontFamily="Segoe UI Semibold" Margin="16,0,0,8"/>
                             <Button Name="NavSettings" Style="{StaticResource NavButtonStyle}">
@@ -1247,9 +1227,7 @@ function Get-AppIcon {
 
                         <!-- Tracking Status -->
                         <StackPanel DockPanel.Dock="Bottom" VerticalAlignment="Bottom" Margin="8,0">
-                            <!-- Separator -->
-                            <Border BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1"
-                                    Margin="0,0,0,12"/>
+                            <Border BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1" Margin="0,0,0,12"/>
                             <Border Background="{StaticResource CardBrush}" CornerRadius="10" Padding="12,10"
                                     BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
                                 <StackPanel>
@@ -1283,7 +1261,7 @@ function Get-AppIcon {
                                     <Border Style="{StaticResource CardStyle}" Margin="0,0,8,0">
                                         <StackPanel>
                                             <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                                                <Border Name="StatIcon1Bg" CornerRadius="8" Padding="8" Margin="0,0,10,0">
+                                                <Border Name="StatIcon1Bg" Background="#2D1F6B" CornerRadius="8" Padding="8" Margin="0,0,10,0">
                                                     <TextBlock Text="&#xE916;" FontFamily="Segoe MDL2 Assets"
                                                                Foreground="{StaticResource PrimaryBrush}" FontSize="16"/>
                                                 </Border>
@@ -1300,7 +1278,7 @@ function Get-AppIcon {
                                     <Border Style="{StaticResource CardStyle}" Margin="4,0,4,0">
                                         <StackPanel>
                                             <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                                                <Border Name="StatIcon2Bg" CornerRadius="8" Padding="8" Margin="0,0,10,0">
+                                                <Border Name="StatIcon2Bg" Background="#1B3A2A" CornerRadius="8" Padding="8" Margin="0,0,10,0">
                                                     <TextBlock Text="&#xE71E;" FontFamily="Segoe MDL2 Assets"
                                                                Foreground="{StaticResource SuccessBrush}" FontSize="16"/>
                                                 </Border>
@@ -1317,7 +1295,7 @@ function Get-AppIcon {
                                     <Border Style="{StaticResource CardStyle}" Margin="4,0,4,0">
                                         <StackPanel>
                                             <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                                                <Border Name="StatIcon3Bg" CornerRadius="8" Padding="8" Margin="0,0,10,0">
+                                                <Border Name="StatIcon3Bg" Background="#3A2A1B" CornerRadius="8" Padding="8" Margin="0,0,10,0">
                                                     <TextBlock Text="&#xEA8F;" FontFamily="Segoe MDL2 Assets"
                                                                Foreground="{StaticResource WarningBrush}" FontSize="16"/>
                                                 </Border>
@@ -1334,7 +1312,7 @@ function Get-AppIcon {
                                     <Border Style="{StaticResource CardStyle}" Margin="8,0,0,0">
                                         <StackPanel>
                                             <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                                                <Border Name="StatIcon4Bg" CornerRadius="8" Padding="8" Margin="0,0,10,0">
+                                                <Border Name="StatIcon4Bg" Background="#3A1B2A" CornerRadius="8" Padding="8" Margin="0,0,10,0">
                                                     <TextBlock Text="&#xE72E;" FontFamily="Segoe MDL2 Assets"
                                                                Foreground="{StaticResource AccentBrush}" FontSize="16"/>
                                                 </Border>
@@ -1806,8 +1784,7 @@ function Get-AppIcon {
                                     <StackPanel>
                                         <TextBlock Text="General" FontSize="16" FontFamily="Segoe UI Semibold"
                                                    Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,16"/>
-                                        <Border BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1"
-                                                Padding="0,0,0,12" Margin="0,0,0,12">
+                                        <Border BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1" Padding="0,0,0,12" Margin="0,0,0,12">
                                             <Grid>
                                                 <StackPanel>
                                                     <TextBlock Text="Enable Tracking" FontSize="13"
@@ -1819,8 +1796,7 @@ function Get-AppIcon {
                                                           HorizontalAlignment="Right" VerticalAlignment="Center"/>
                                             </Grid>
                                         </Border>
-                                        <Border BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1"
-                                                Padding="0,0,0,12" Margin="0,0,0,12">
+                                        <Border BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1" Padding="0,0,0,12" Margin="0,0,0,12">
                                             <Grid>
                                                 <StackPanel>
                                                     <TextBlock Text="Enable Notifications" FontSize="13"
@@ -1832,8 +1808,7 @@ function Get-AppIcon {
                                                           HorizontalAlignment="Right" VerticalAlignment="Center"/>
                                             </Grid>
                                         </Border>
-                                        <Border BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1"
-                                                Padding="0,0,0,12" Margin="0,0,0,12">
+                                        <Border BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1" Padding="0,0,0,12" Margin="0,0,0,12">
                                             <Grid>
                                                 <StackPanel>
                                                     <TextBlock Text="Minimize to System Tray" FontSize="13"
@@ -1930,8 +1905,7 @@ function Get-AppIcon {
                                                    FontSize="13" Foreground="{StaticResource TextSecondaryBrush}"
                                                    TextWrapping="Wrap" TextAlignment="Center" Margin="0,0,0,16"/>
 
-                                        <Border BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1"
-                                                Padding="0,0,0,12" Margin="0,0,0,12">
+                                        <Border BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1" Padding="0,0,0,12" Margin="0,0,0,12">
                                             <StackPanel>
                                                 <TextBlock Text="Features" FontSize="15" FontFamily="Segoe UI Semibold"
                                                            Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,8"/>
@@ -1947,8 +1921,7 @@ function Get-AppIcon {
                                             </StackPanel>
                                         </Border>
 
-                                        <Border BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1"
-                                                Padding="0,0,0,12" Margin="0,0,0,12">
+                                        <Border BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1" Padding="0,0,0,12" Margin="0,0,0,12">
                                             <StackPanel>
                                                 <TextBlock Text="Author" FontSize="15" FontFamily="Segoe UI Semibold"
                                                            Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,8"/>
@@ -1992,15 +1965,6 @@ $xaml.SelectNodes("//*[@Name]") | ForEach-Object {
         }
     }
 }
-
-# ── Set initial stat icon backgrounds ──
-$converter = [System.Windows.Media.BrushConverter]::new()
-try {
-    $StatIcon1Bg.Background = $converter.ConvertFrom("#2D1F6B")
-    $StatIcon2Bg.Background = $converter.ConvertFrom("#1B3A2A")
-    $StatIcon3Bg.Background = $converter.ConvertFrom("#3A2A1B")
-    $StatIcon4Bg.Background = $converter.ConvertFrom("#3A1B2A")
-} catch { }
 
 # ── Title Bar Drag ──
 $TitleBar.Add_MouseLeftButtonDown({
@@ -2059,16 +2023,11 @@ function Switch-Page {
                 $converter.ConvertFrom($script:CurrentTheme['TextSecondaryColor'])
             }
             $script:NavButtons[$i].Foreground = $fgBrush
-            # Explicitly walk button visual tree to update child TextBlocks
-            function Set-ChildTextForeground {
-                param($el, $brush)
-                if ($el -is [System.Windows.Controls.TextBlock]) {
-                    $el.Foreground = $brush
-                }
+            function Set-ChildTextForeground { param($el, $brush)
+                if ($el -is [System.Windows.Controls.TextBlock]) { $el.Foreground = $brush }
                 $cnt = [System.Windows.Media.VisualTreeHelper]::GetChildrenCount($el)
                 for ($k = 0; $k -lt $cnt; $k++) {
-                    $ch = [System.Windows.Media.VisualTreeHelper]::GetChild($el, $k)
-                    Set-ChildTextForeground $ch $brush
+                    Set-ChildTextForeground ([System.Windows.Media.VisualTreeHelper]::GetChild($el, $k)) $brush
                 }
             }
             try { Set-ChildTextForeground $script:NavButtons[$i] $fgBrush } catch { }
@@ -2144,7 +2103,7 @@ function Update-Dashboard {
         $sp.Children.Add($nameText)
 
         $progressBorder = New-Object System.Windows.Controls.Border
-        $progressBorder.Background = $window.FindResource("BorderBrush")
+        $progressBorder.Background = $window.FindResource("BgSecondaryBrush")
         $progressBorder.CornerRadius = [System.Windows.CornerRadius]::new(3)
         $progressBorder.Height = 6
 
@@ -2469,7 +2428,7 @@ function Update-CategoryBreakdown {
 
         # Progress bar
         $progressBg = New-Object System.Windows.Controls.Border
-        $progressBg.Background = $window.FindResource("BorderBrush")
+        $progressBg.Background = $window.FindResource("CardBrush")
         $progressBg.CornerRadius = [System.Windows.CornerRadius]::new(4)
         $progressBg.Height = 6
         $progressBg.Margin = [System.Windows.Thickness]::new(0, 0, 0, 8)
@@ -2624,8 +2583,7 @@ function Update-AppsList {
 
         # Status
         $statusBorder = New-Object System.Windows.Controls.Border
-        $statusBgColor = if ($script:CurrentTheme) { $script:CurrentTheme['StatusBg'] } else { '#1B3A2A' }
-        $statusBorder.Background = [System.Windows.Media.BrushConverter]::new().ConvertFrom($statusBgColor)
+        $statusBorder.Background = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#1B3A2A")
         $statusBorder.CornerRadius = [System.Windows.CornerRadius]::new(4)
         $statusBorder.Padding = [System.Windows.Thickness]::new(8, 2, 8, 2)
         $statusBorder.HorizontalAlignment = 'Center'
@@ -2764,8 +2722,7 @@ function Draw-WeeklyChart {
         if ($i -eq 6) {
             $bar.Fill = $window.FindResource("PrimaryBrush")
         } else {
-            $chartBgColor = if ($script:CurrentTheme) { $script:CurrentTheme['ChartBarBg'] } else { '#2D3A5C' }
-            $bar.Fill = [System.Windows.Media.BrushConverter]::new().ConvertFrom($chartBgColor)
+            $bar.Fill = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#2D3A5C")
         }
 
         [System.Windows.Controls.Canvas]::SetLeft($bar, $x)
@@ -2832,8 +2789,7 @@ function Draw-HourlyChart {
             $bar.Fill = $window.FindResource("PrimaryBrush")
             $bar.Opacity = 0.5
         } else {
-            $chartBgColor2 = if ($script:CurrentTheme) { $script:CurrentTheme['ChartBarBg'] } else { '#2D3A5C' }
-            $bar.Fill = [System.Windows.Media.BrushConverter]::new().ConvertFrom($chartBgColor2)
+            $bar.Fill = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#2D3A5C")
         }
 
         [System.Windows.Controls.Canvas]::SetLeft($bar, $x)
@@ -2866,267 +2822,227 @@ function Get-WindowsTheme {
 function Apply-Theme {
     param([string]$ThemeName)
 
-    $script:DarkTheme = @{
-        BgColor          = "#1A1A2E"; BgSecondaryColor = "#16213E"
-        CardColor        = "#1F2940"; CardHoverColor   = "#263250"
+    $dark = @{
+        BgColor        = "#1A1A2E"; BgSecondaryColor = "#16213E"
+        CardColor      = "#1F2940"; CardHoverColor   = "#263250"
         TextPrimaryColor = "#FFFFFF"; TextSecondaryColor = "#8892B0"
-        BorderColor      = "#2D3A5C"
-        StatIcon1Bg      = "#2D1F6B"; StatIcon2Bg = "#1B3A2A"
-        StatIcon3Bg      = "#3A2A1B"; StatIcon4Bg = "#3A1B2A"
-        ChartBarBg       = "#2D3A5C"; StatusBg = "#1B3A2A"
-        CaretBrush       = "White"
-        ToggleTrack      = "#3D4663"
-        ScrollBarBg      = "#2D3A5C"
-        SeparatorColor   = "#2D3A5C"
+        BorderColor    = "#2D3A5C"
+        ChartBarBg     = "#2D3A5C"
+        ToggleTrack    = "#3D4663"
+        CaretColor     = "#FFFFFF"
+        StatIcon1      = "#2D1F6B"; StatIcon2 = "#1B3A2A"
+        StatIcon3      = "#3A2A1B"; StatIcon4 = "#3A1B2A"
     }
-    $script:LightTheme = @{
-        BgColor          = "#F0F2F5"; BgSecondaryColor = "#FFFFFF"
-        CardColor        = "#FFFFFF"; CardHoverColor   = "#E8EAF0"
+    $light = @{
+        BgColor        = "#F0F2F5"; BgSecondaryColor = "#FFFFFF"
+        CardColor      = "#FFFFFF"; CardHoverColor   = "#E8EAF0"
         TextPrimaryColor = "#1A1A2E"; TextSecondaryColor = "#5A6078"
-        BorderColor      = "#D0D4DC"
-        StatIcon1Bg      = "#E8E5FF"; StatIcon2Bg = "#E5F5EC"
-        StatIcon3Bg      = "#FFF3E0"; StatIcon4Bg = "#FDE5EC"
-        ChartBarBg       = "#D0D4DC"; StatusBg = "#E5F5EC"
-        CaretBrush       = "Black"
-        ToggleTrack      = "#C4C7D0"
-        ScrollBarBg      = "#D0D4DC"
-        SeparatorColor   = "#D0D4DC"
+        BorderColor    = "#D0D4DC"
+        ChartBarBg     = "#D0D4DC"
+        ToggleTrack    = "#C4C7D0"
+        CaretColor     = "#000000"
+        StatIcon1      = "#E8E5FF"; StatIcon2 = "#E5F5EC"
+        StatIcon3      = "#FFF3E0"; StatIcon4 = "#FDE5EC"
     }
 
     $resolved = $ThemeName
     if ($ThemeName -eq "Windows Default") {
         $resolved = Get-WindowsTheme
     }
-    $script:IsLightTheme = ($resolved -eq "Light")
 
-    $colors = if ($script:IsLightTheme) { $script:LightTheme } else { $script:DarkTheme }
+    $colors = if ($resolved -eq "Light") { $light } else { $dark }
     $script:CurrentTheme = $colors
+
     $converter = [System.Windows.Media.BrushConverter]::new()
 
-    # Update Color resources and modify existing Brush resources in-place
-    $script:ThemeBrushes = @{}
+    # Update Color and Brush resources in-place
     $themeKeys = @('BgColor','BgSecondaryColor','CardColor','CardHoverColor','TextPrimaryColor','TextSecondaryColor','BorderColor')
     foreach ($key in $themeKeys) {
         $brushKey = $key -replace 'Color$', 'Brush'
         $newColor = [System.Windows.Media.ColorConverter]::ConvertFromString($colors[$key])
         $window.Resources[$key] = $newColor
-        # Try to modify existing brush Color in-place (updates StaticResource references)
         $existingBrush = $window.Resources[$brushKey]
         if ($existingBrush -is [System.Windows.Media.SolidColorBrush]) {
-            try {
-                $existingBrush.Color = $newColor
-                $script:ThemeBrushes[$brushKey] = $existingBrush
-            } catch {
+            try { $existingBrush.Color = $newColor }
+            catch {
                 $newBrush = New-Object System.Windows.Media.SolidColorBrush($newColor)
                 $window.Resources[$brushKey] = $newBrush
-                $script:ThemeBrushes[$brushKey] = $newBrush
             }
         } else {
             $newBrush = New-Object System.Windows.Media.SolidColorBrush($newColor)
             $window.Resources[$brushKey] = $newBrush
-            $script:ThemeBrushes[$brushKey] = $newBrush
         }
     }
 
-    # Known dark and light foreground hex values
-    $script:AllPrimaryFgHexes = @('#FFFFFFFF', '#FF1A1A2E', '#FF000000')
-    $script:AllSecondaryFgHexes = @('#FF8892B0', '#FF5A6078', '#FF808080')
-    # Known dark and light background hex values
-    $script:AllCardBgHexes = @('#FF1F2940', '#FFFFFFFF')
-    $script:AllBgSecondaryHexes = @('#FF16213E', '#FFF0F2F5', '#FFFFFFFF')
-    $script:AllBorderHexes = @('#FF2D3A5C', '#FFD0D4DC')
-    $script:AllToggleTrackHexes = @('#FF3D4663', '#FFC4C7D0')
-    $script:AllBgHexes = @('#FF1A1A2E', '#FFF0F2F5')
-
-    # ─── Direct element updates ───
-
-    # Main window border
+    # Force main border background
     $mainBorder = $window.Content
     if ($mainBorder -is [System.Windows.Controls.Border]) {
         $mainBorder.Background = $converter.ConvertFrom($colors['BgColor'])
-        $mainBorder.BorderBrush = $converter.ConvertFrom($colors['BorderColor'])
     }
-
-    # Title bar
-    try {
-        $TitleBar.Background = $converter.ConvertFrom($colors['BgSecondaryColor'])
-    } catch { }
-
-    # Sidebar
-    try {
-        $sidebarBorder = $mainBorder.Child.Children[1].Children[0]
-        if ($sidebarBorder -is [System.Windows.Controls.Border]) {
-            $sidebarBorder.Background = $converter.ConvertFrom($colors['BgSecondaryColor'])
-        }
-    } catch { }
-
-    # Title bar buttons (minimize, maximize, close)
-    try {
-        $MinBtn.Foreground = $converter.ConvertFrom($colors['TextSecondaryColor'])
-        $MaxBtn.Foreground = $converter.ConvertFrom($colors['TextSecondaryColor'])
-        $CloseBtn.Foreground = $converter.ConvertFrom($colors['TextSecondaryColor'])
-    } catch { }
 
     # Stat icon backgrounds
     try {
-        $StatIcon1Bg.Background = $converter.ConvertFrom($colors['StatIcon1Bg'])
-        $StatIcon2Bg.Background = $converter.ConvertFrom($colors['StatIcon2Bg'])
-        $StatIcon3Bg.Background = $converter.ConvertFrom($colors['StatIcon3Bg'])
-        $StatIcon4Bg.Background = $converter.ConvertFrom($colors['StatIcon4Bg'])
+        $StatIcon1Bg = $window.FindName("StatIcon1Bg")
+        $StatIcon2Bg = $window.FindName("StatIcon2Bg")
+        $StatIcon3Bg = $window.FindName("StatIcon3Bg")
+        $StatIcon4Bg = $window.FindName("StatIcon4Bg")
+        if ($StatIcon1Bg) { $StatIcon1Bg.Background = $converter.ConvertFrom($colors['StatIcon1']) }
+        if ($StatIcon2Bg) { $StatIcon2Bg.Background = $converter.ConvertFrom($colors['StatIcon2']) }
+        if ($StatIcon3Bg) { $StatIcon3Bg.Background = $converter.ConvertFrom($colors['StatIcon3']) }
+        if ($StatIcon4Bg) { $StatIcon4Bg.Background = $converter.ConvertFrom($colors['StatIcon4']) }
     } catch { }
 
-    # Sidebar text elements
+    # Sidebar text
     try {
         $UserNameText.Foreground = $converter.ConvertFrom($colors['TextPrimaryColor'])
         $ScreenTimeLabel.Foreground = $converter.ConvertFrom($colors['TextSecondaryColor'])
     } catch { }
 
-    # Nav button foreground colors (icons + text) - walk into visual tree
+    # Nav button text colors - walk visual tree for each button
     $navSecondaryBrush = $converter.ConvertFrom($colors['TextSecondaryColor'])
     foreach ($btn in $script:NavButtons) {
         try {
             $btn.Foreground = $navSecondaryBrush
-            function Set-BtnChildFg {
-                param($el, $brush)
-                if ($el -is [System.Windows.Controls.TextBlock]) {
-                    $el.Foreground = $brush
-                }
+            function Set-BtnChildFg { param($el, $brush)
+                if ($el -is [System.Windows.Controls.TextBlock]) { $el.Foreground = $brush }
                 $cnt = [System.Windows.Media.VisualTreeHelper]::GetChildrenCount($el)
                 for ($k = 0; $k -lt $cnt; $k++) {
-                    $ch = [System.Windows.Media.VisualTreeHelper]::GetChild($el, $k)
-                    Set-BtnChildFg $ch $brush
+                    Set-BtnChildFg ([System.Windows.Media.VisualTreeHelper]::GetChild($el, $k)) $brush
                 }
             }
             Set-BtnChildFg $btn $navSecondaryBrush
         } catch { }
     }
 
-    # Also update sidebar section labels ("MENU", "SYSTEM") by walking the sidebar
+    # Title bar elements
     try {
-        $sidebar = $mainBorder.Child.Children[1].Children[0]
-        function Update-SidebarTexts {
-            param($el)
+        $TitleBar = $window.FindName("TitleBar")
+        if ($TitleBar) {
+            $TitleBar.Background = $converter.ConvertFrom($colors['BgSecondaryColor'])
+            $TitleBar.BorderBrush = $converter.ConvertFrom($colors['BorderColor'])
+        }
+        foreach ($btnName in @("MinBtn","MaxBtn","CloseBtn")) {
+            $b = $window.FindName($btnName)
+            if ($b) { $b.Foreground = $converter.ConvertFrom($colors['TextSecondaryColor']) }
+        }
+    } catch { }
+
+    # Walk entire visual tree to update foregrounds and backgrounds
+    $primaryBrush = $converter.ConvertFrom($colors['TextPrimaryColor'])
+    $secondaryBrush = $converter.ConvertFrom($colors['TextSecondaryColor'])
+    $bgBrush = $converter.ConvertFrom($colors['BgColor'])
+    $bgSecBrush = $converter.ConvertFrom($colors['BgSecondaryColor'])
+    $cardBrush = $converter.ConvertFrom($colors['CardColor'])
+    $borderBrush = $converter.ConvertFrom($colors['BorderColor'])
+
+    # Known dark foreground hex values to detect and remap
+    $darkFgHexes = @('#FF1A1A2E','#FF5A6078','#FF000000','#FF808080','#FF333333')
+    $lightFgHexes = @('#FFFFFFFF','#FF8892B0','#FFE0E0E0','#FFC0C0C0','#FFCCCCCC')
+    $allFgHexes = $darkFgHexes + $lightFgHexes
+
+    function Update-ElementColors { param($el)
+        try {
             if ($el -is [System.Windows.Controls.TextBlock]) {
                 $fg = $el.Foreground
                 if ($fg -is [System.Windows.Media.SolidColorBrush]) {
                     $hex = $fg.Color.ToString()
-                    if ($script:AllPrimaryFgHexes -contains $hex) {
-                        $el.Foreground = $converter.ConvertFrom($colors['TextPrimaryColor'])
-                    }
-                    elseif ($script:AllSecondaryFgHexes -contains $hex) {
-                        $el.Foreground = $converter.ConvertFrom($colors['TextSecondaryColor'])
-                    }
-                }
-            }
-            $count = [System.Windows.Media.VisualTreeHelper]::GetChildrenCount($el)
-            for ($j = 0; $j -lt $count; $j++) {
-                $child = [System.Windows.Media.VisualTreeHelper]::GetChild($el, $j)
-                Update-SidebarTexts $child
-            }
-        }
-        Update-SidebarTexts $sidebar
-    } catch { }
-
-    # ─── Visual tree walker ───
-    function Update-ElementColors {
-        param($element)
-        if (-not $element) { return }
-
-        $textPrimaryBrush = $converter.ConvertFrom($colors['TextPrimaryColor'])
-        $textSecondaryBrush = $converter.ConvertFrom($colors['TextSecondaryColor'])
-        $cardBrush = $converter.ConvertFrom($colors['CardColor'])
-        $bgSecBrush = $converter.ConvertFrom($colors['BgSecondaryColor'])
-        $borderBrush = $converter.ConvertFrom($colors['BorderColor'])
-        $toggleBrush = $converter.ConvertFrom($colors['ToggleTrack'])
-
-        # TextBlock foreground
-        if ($element -is [System.Windows.Controls.TextBlock]) {
-            $fg = $element.Foreground
-            if ($fg -is [System.Windows.Media.SolidColorBrush]) {
-                $hex = $fg.Color.ToString()
-                if ($script:AllPrimaryFgHexes -contains $hex) {
-                    $element.Foreground = $textPrimaryBrush
-                }
-                elseif ($script:AllSecondaryFgHexes -contains $hex) {
-                    $element.Foreground = $textSecondaryBrush
-                }
-            }
-        }
-
-        # Control foreground (buttons, labels, etc. — not textboxes)
-        if ($element -is [System.Windows.Controls.Control] -and
-            $element -isnot [System.Windows.Controls.TextBox] -and
-            $element -isnot [System.Windows.Controls.PasswordBox] -and
-            $element -isnot [System.Windows.Controls.ComboBox]) {
-            try {
-                $fg = $element.Foreground
-                if ($fg -is [System.Windows.Media.SolidColorBrush]) {
-                    $hex = $fg.Color.ToString()
-                    if ($script:AllPrimaryFgHexes -contains $hex) {
-                        $element.Foreground = $textPrimaryBrush
-                    }
-                    elseif ($script:AllSecondaryFgHexes -contains $hex) {
-                        $element.Foreground = $textSecondaryBrush
+                    if ($hex -in $allFgHexes) {
+                        if ($el.FontFamily.Source -eq 'Segoe UI Semibold' -or $el.FontFamily.Source -eq 'Segoe UI Bold' -or $el.FontSize -ge 14) {
+                            $el.Foreground = $primaryBrush
+                        } else {
+                            $el.Foreground = $secondaryBrush
+                        }
                     }
                 }
-            } catch { }
-        }
-
-        # Border backgrounds and border brushes
-        if ($element -is [System.Windows.Controls.Border]) {
-            $bg = $element.Background
-            if ($bg -is [System.Windows.Media.SolidColorBrush]) {
-                $hex = $bg.Color.ToString()
-                if ($script:AllCardBgHexes -contains $hex) {
-                    $element.Background = $cardBrush
-                }
-                elseif ($script:AllBgHexes -contains $hex) {
-                    $element.Background = $converter.ConvertFrom($colors['BgColor'])
-                }
-                elseif ($script:AllToggleTrackHexes -contains $hex) {
-                    $element.Background = $toggleBrush
-                }
             }
-            $bb = $element.BorderBrush
-            if ($bb -is [System.Windows.Media.SolidColorBrush]) {
-                $hex = $bb.Color.ToString()
-                if ($script:AllBorderHexes -contains $hex) {
-                    $element.BorderBrush = $borderBrush
-                }
+            if ($el -is [System.Windows.Controls.TextBox]) {
+                $el.Foreground = $primaryBrush
+                $el.Background = $bgSecBrush
+                $el.BorderBrush = $borderBrush
+                $el.CaretBrush = $converter.ConvertFrom($colors['CaretColor'])
             }
-        }
+            if ($el -is [System.Windows.Controls.PasswordBox]) {
+                $el.Foreground = $primaryBrush
+                $el.Background = $bgSecBrush
+                $el.BorderBrush = $borderBrush
+                $el.CaretBrush = $converter.ConvertFrom($colors['CaretColor'])
+            }
+            if ($el -is [System.Windows.Controls.ComboBox]) {
+                $el.Foreground = $primaryBrush
+                $el.Background = $bgSecBrush
+                $el.BorderBrush = $borderBrush
+            }
+        } catch { }
 
-        # TextBox / PasswordBox
-        if ($element -is [System.Windows.Controls.TextBox] -or $element -is [System.Windows.Controls.PasswordBox]) {
-            try {
-                $element.Background = $bgSecBrush
-                $element.Foreground = $textPrimaryBrush
-                $element.BorderBrush = $borderBrush
-                $element.CaretBrush = $converter.ConvertFrom($colors['CaretBrush'])
-            } catch { }
-        }
-
-        # ComboBox
-        if ($element -is [System.Windows.Controls.ComboBox]) {
-            try {
-                $element.Background = $bgSecBrush
-                $element.Foreground = $textPrimaryBrush
-                $element.BorderBrush = $borderBrush
-            } catch { }
-        }
-
-        # Recurse into visual children
-        $childCount = [System.Windows.Media.VisualTreeHelper]::GetChildrenCount($element)
-        for ($i = 0; $i -lt $childCount; $i++) {
-            $child = [System.Windows.Media.VisualTreeHelper]::GetChild($element, $i)
-            Update-ElementColors $child
+        $cnt = [System.Windows.Media.VisualTreeHelper]::GetChildrenCount($el)
+        for ($i = 0; $i -lt $cnt; $i++) {
+            Update-ElementColors ([System.Windows.Media.VisualTreeHelper]::GetChild($el, $i))
         }
     }
 
-    # Walk entire visual tree
-    Update-ElementColors $window
+    try { Update-ElementColors $window } catch { }
 
-    # Refresh the current page to regenerate dynamic content with correct colors
+    # Toggle switch track color
+    try {
+        $trackBrush = $converter.ConvertFrom($colors['ToggleTrack'])
+        function Update-ToggleTracks { param($el)
+            if ($el -is [System.Windows.Controls.CheckBox]) {
+                $cnt = [System.Windows.Media.VisualTreeHelper]::GetChildrenCount($el)
+                for ($i = 0; $i -lt $cnt; $i++) {
+                    $child = [System.Windows.Media.VisualTreeHelper]::GetChild($el, $i)
+                    if ($child -is [System.Windows.Controls.Border] -and $child.CornerRadius.TopLeft -ge 10) {
+                        $child.Background = $trackBrush
+                    }
+                    Update-ToggleTracks $child
+                }
+            } else {
+                $cnt = [System.Windows.Media.VisualTreeHelper]::GetChildrenCount($el)
+                for ($i = 0; $i -lt $cnt; $i++) {
+                    Update-ToggleTracks ([System.Windows.Media.VisualTreeHelper]::GetChild($el, $i))
+                }
+            }
+        }
+        Update-ToggleTracks $window
+    } catch { }
+
+    # Fix progress bar track backgrounds on dashboard
+    try {
+        function Update-ProgressBars { param($el)
+            if ($el -is [System.Windows.Controls.Border] -and $el.Height -eq 6 -and $el.CornerRadius.TopLeft -ge 2) {
+                $fg = $el.Background
+                if ($fg -is [System.Windows.Media.SolidColorBrush]) {
+                    $hex = $fg.Color.ToString()
+                    if ($hex -in @('#FF2D3A5C','#FFD0D4DC','#FF16213E','#FFFFFFFF')) {
+                        $el.Background = $borderBrush
+                    }
+                }
+            }
+            $cnt = [System.Windows.Media.VisualTreeHelper]::GetChildrenCount($el)
+            for ($i = 0; $i -lt $cnt; $i++) {
+                Update-ProgressBars ([System.Windows.Media.VisualTreeHelper]::GetChild($el, $i))
+            }
+        }
+        Update-ProgressBars $window
+    } catch { }
+
+    # Sidebar section labels (MENU, SYSTEM)
+    try {
+        function Update-SidebarLabels { param($el)
+            if ($el -is [System.Windows.Controls.TextBlock]) {
+                $t = $el.Text
+                if ($t -eq 'MENU' -or $t -eq 'SYSTEM') {
+                    $el.Foreground = $secondaryBrush
+                }
+            }
+            $cnt = [System.Windows.Media.VisualTreeHelper]::GetChildrenCount($el)
+            for ($i = 0; $i -lt $cnt; $i++) {
+                Update-SidebarLabels ([System.Windows.Media.VisualTreeHelper]::GetChild($el, $i))
+            }
+        }
+        Update-SidebarLabels $window
+    } catch { }
+
+    # Refresh the current page
     $currentPageIndex = -1
     for ($i = 0; $i -lt $script:Pages.Count; $i++) {
         if ($script:Pages[$i].Visibility -eq 'Visible') { $currentPageIndex = $i; break }
@@ -3285,8 +3201,7 @@ function Update-LimitsList {
 
             # Progress bar
             $progressBg = New-Object System.Windows.Controls.Border
-            $progressBgColor = if ($script:CurrentTheme) { $script:CurrentTheme['ChartBarBg'] } else { '#2D3A5C' }
-            $progressBg.Background = [System.Windows.Media.BrushConverter]::new().ConvertFrom($progressBgColor)
+            $progressBg.Background = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#2D3A5C")
             $progressBg.CornerRadius = [System.Windows.CornerRadius]::new(4)
             $progressBg.Height = 8
             $progressBg.VerticalAlignment = 'Center'
@@ -3809,9 +3724,10 @@ if ($savedTheme) {
     }
 }
 
-# Apply saved theme on startup (always call to initialize $script:CurrentTheme)
-$initTheme = if ($savedTheme) { $savedTheme } else { "Dark" }
-Apply-Theme $initTheme
+# Apply saved theme on startup
+if ($savedTheme -and $savedTheme -ne "Dark") {
+    Apply-Theme $savedTheme
+}
 
 $ThemeComboBox.Add_SelectionChanged({
     $selected = $ThemeComboBox.SelectedItem.Content
