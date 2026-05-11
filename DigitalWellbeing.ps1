@@ -950,6 +950,8 @@ function Get-AppIcon {
             <Setter Property="CornerRadius" Value="12"/>
             <Setter Property="Padding" Value="20"/>
             <Setter Property="Margin" Value="0,0,0,12"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
         </Style>
 
         <!-- Modern Button Style -->
@@ -2014,6 +2016,18 @@ function Switch-Page {
         )
     }
 
+    # Fix nav button foreground colors for current theme
+    if ($script:CurrentTheme) {
+        $converter = [System.Windows.Media.BrushConverter]::new()
+        for ($i = 0; $i -lt $script:NavButtons.Count; $i++) {
+            if ($i -eq $Index) {
+                $script:NavButtons[$i].Foreground = $converter.ConvertFrom("#FFFFFF")
+            } else {
+                $script:NavButtons[$i].Foreground = $converter.ConvertFrom($script:CurrentTheme['TextSecondaryColor'])
+            }
+        }
+    }
+
     # Refresh page content
     switch ($Index) {
         0 { Update-Dashboard }
@@ -2229,6 +2243,8 @@ function Update-RunningApps {
     foreach ($app in ($apps | Select-Object -First 10)) {
         $border = New-Object System.Windows.Controls.Border
         $border.Background = $window.FindResource("BgSecondaryBrush")
+        $border.BorderBrush = $window.FindResource("BorderBrush")
+        $border.BorderThickness = [System.Windows.Thickness]::new(1)
         $border.CornerRadius = [System.Windows.CornerRadius]::new(8)
         $border.Padding = [System.Windows.Thickness]::new(12, 8, 12, 8)
         $border.Margin = [System.Windows.Thickness]::new(0, 0, 0, 4)
@@ -2338,6 +2354,8 @@ function Update-CategoryBreakdown {
 
         $catBorder = New-Object System.Windows.Controls.Border
         $catBorder.Background = $window.FindResource("BgSecondaryBrush")
+        $catBorder.BorderBrush = $window.FindResource("BorderBrush")
+        $catBorder.BorderThickness = [System.Windows.Thickness]::new(1)
         $catBorder.CornerRadius = [System.Windows.CornerRadius]::new(10)
         $catBorder.Padding = [System.Windows.Thickness]::new(16, 14, 16, 14)
         $catBorder.Margin = [System.Windows.Thickness]::new(0, 0, 10, 10)
@@ -2488,6 +2506,8 @@ function Update-AppsList {
         $border = New-Object System.Windows.Controls.Border
         $border.Padding = [System.Windows.Thickness]::new(16, 10, 16, 10)
         $border.Margin = [System.Windows.Thickness]::new(0, 0, 0, 1)
+        $border.BorderBrush = $window.FindResource("BorderBrush")
+        $border.BorderThickness = [System.Windows.Thickness]::new(0, 0, 0, 1)
 
         $grid = New-Object System.Windows.Controls.Grid
         $widths = @(40, 0, 150, 100, 100, 80)
@@ -2576,6 +2596,8 @@ function Update-AppsList {
     foreach ($app in $thirdPartyApps) {
         $border = New-Object System.Windows.Controls.Border
         $border.Background = $window.FindResource("BgSecondaryBrush")
+        $border.BorderBrush = $window.FindResource("BorderBrush")
+        $border.BorderThickness = [System.Windows.Thickness]::new(1)
         $border.CornerRadius = [System.Windows.CornerRadius]::new(8)
         $border.Padding = [System.Windows.Thickness]::new(16, 10, 16, 10)
         $border.Margin = [System.Windows.Thickness]::new(0, 0, 0, 6)
@@ -2795,59 +2817,94 @@ function Apply-Theme {
     param([string]$ThemeName)
 
     $script:DarkTheme = @{
-        BgColor        = "#1A1A2E"; BgSecondaryColor = "#16213E"
-        CardColor      = "#1F2940"; CardHoverColor   = "#263250"
+        BgColor          = "#1A1A2E"; BgSecondaryColor = "#16213E"
+        CardColor        = "#1F2940"; CardHoverColor   = "#263250"
         TextPrimaryColor = "#FFFFFF"; TextSecondaryColor = "#8892B0"
-        BorderColor    = "#2D3A5C"
-        StatIcon1Bg    = "#2D1F6B"; StatIcon2Bg = "#1B3A2A"
-        StatIcon3Bg    = "#3A2A1B"; StatIcon4Bg = "#3A1B2A"
-        ChartBarBg     = "#2D3A5C"; StatusBg = "#1B3A2A"
-        CaretBrush     = "White"
+        BorderColor      = "#2D3A5C"
+        StatIcon1Bg      = "#2D1F6B"; StatIcon2Bg = "#1B3A2A"
+        StatIcon3Bg      = "#3A2A1B"; StatIcon4Bg = "#3A1B2A"
+        ChartBarBg       = "#2D3A5C"; StatusBg = "#1B3A2A"
+        CaretBrush       = "White"
+        ToggleTrack      = "#3D4663"
+        ScrollBarBg      = "#2D3A5C"
+        SeparatorColor   = "#2D3A5C"
     }
     $script:LightTheme = @{
-        BgColor        = "#F0F2F5"; BgSecondaryColor = "#FFFFFF"
-        CardColor      = "#FFFFFF"; CardHoverColor   = "#E8EAF0"
+        BgColor          = "#F0F2F5"; BgSecondaryColor = "#FFFFFF"
+        CardColor        = "#FFFFFF"; CardHoverColor   = "#E8EAF0"
         TextPrimaryColor = "#1A1A2E"; TextSecondaryColor = "#5A6078"
-        BorderColor    = "#D0D4DC"
-        StatIcon1Bg    = "#E8E5FF"; StatIcon2Bg = "#E5F5EC"
-        StatIcon3Bg    = "#FFF3E0"; StatIcon4Bg = "#FDE5EC"
-        ChartBarBg     = "#D0D4DC"; StatusBg = "#E5F5EC"
-        CaretBrush     = "Black"
+        BorderColor      = "#D0D4DC"
+        StatIcon1Bg      = "#E8E5FF"; StatIcon2Bg = "#E5F5EC"
+        StatIcon3Bg      = "#FFF3E0"; StatIcon4Bg = "#FDE5EC"
+        ChartBarBg       = "#D0D4DC"; StatusBg = "#E5F5EC"
+        CaretBrush       = "Black"
+        ToggleTrack      = "#C4C7D0"
+        ScrollBarBg      = "#D0D4DC"
+        SeparatorColor   = "#D0D4DC"
     }
 
     $resolved = $ThemeName
     if ($ThemeName -eq "Windows Default") {
         $resolved = Get-WindowsTheme
     }
+    $script:IsLightTheme = ($resolved -eq "Light")
 
-    $colors = if ($resolved -eq "Light") { $script:LightTheme } else { $script:DarkTheme }
+    $colors = if ($script:IsLightTheme) { $script:LightTheme } else { $script:DarkTheme }
     $script:CurrentTheme = $colors
     $converter = [System.Windows.Media.BrushConverter]::new()
 
-    # Build brush lookup for theme-aware colors
+    # Build new brushes and update all window resources
     $script:ThemeBrushes = @{}
     $themeKeys = @('BgColor','BgSecondaryColor','CardColor','CardHoverColor','TextPrimaryColor','TextSecondaryColor','BorderColor')
     foreach ($key in $themeKeys) {
         $brushKey = $key -replace 'Color$', 'Brush'
-        $newBrush = $converter.ConvertFrom($colors[$key])
+        $newColor = [System.Windows.Media.ColorConverter]::ConvertFromString($colors[$key])
+        $newBrush = New-Object System.Windows.Media.SolidColorBrush($newColor)
         $script:ThemeBrushes[$brushKey] = $newBrush
+        $window.Resources[$key] = $newColor
         $window.Resources[$brushKey] = $newBrush
     }
 
-    # Update main window border background
+    # Known dark and light foreground hex values
+    $script:AllPrimaryFgHexes = @('#FFFFFFFF', '#FF1A1A2E', '#FF000000')
+    $script:AllSecondaryFgHexes = @('#FF8892B0', '#FF5A6078', '#FF808080')
+    # Known dark and light background hex values
+    $script:AllCardBgHexes = @('#FF1F2940', '#FFFFFFFF')
+    $script:AllBgSecondaryHexes = @('#FF16213E', '#FFF0F2F5', '#FFFFFFFF')
+    $script:AllBorderHexes = @('#FF2D3A5C', '#FFD0D4DC')
+    $script:AllToggleTrackHexes = @('#FF3D4663', '#FFC4C7D0')
+    $script:AllBgHexes = @('#FF1A1A2E', '#FFF0F2F5')
+
+    # ─── Direct element updates ───
+
+    # Main window border
     $mainBorder = $window.Content
     if ($mainBorder -is [System.Windows.Controls.Border]) {
         $mainBorder.Background = $converter.ConvertFrom($colors['BgColor'])
         $mainBorder.BorderBrush = $converter.ConvertFrom($colors['BorderColor'])
     }
 
-    # Update sidebar background
-    $sidebarBorder = $mainBorder.Child.Children[1].Children[0]
-    if ($sidebarBorder -is [System.Windows.Controls.Border]) {
-        $sidebarBorder.Background = $converter.ConvertFrom($colors['BgSecondaryColor'])
-    }
+    # Title bar
+    try {
+        $TitleBar.Background = $converter.ConvertFrom($colors['BgSecondaryColor'])
+    } catch { }
 
-    # Update stat icon backgrounds
+    # Sidebar
+    try {
+        $sidebarBorder = $mainBorder.Child.Children[1].Children[0]
+        if ($sidebarBorder -is [System.Windows.Controls.Border]) {
+            $sidebarBorder.Background = $converter.ConvertFrom($colors['BgSecondaryColor'])
+        }
+    } catch { }
+
+    # Title bar buttons (minimize, maximize, close)
+    try {
+        $MinBtn.Foreground = $converter.ConvertFrom($colors['TextSecondaryColor'])
+        $MaxBtn.Foreground = $converter.ConvertFrom($colors['TextSecondaryColor'])
+        $CloseBtn.Foreground = $converter.ConvertFrom($colors['TextSecondaryColor'])
+    } catch { }
+
+    # Stat icon backgrounds
     try {
         $StatIcon1Bg.Background = $converter.ConvertFrom($colors['StatIcon1Bg'])
         $StatIcon2Bg.Background = $converter.ConvertFrom($colors['StatIcon2Bg'])
@@ -2855,86 +2912,95 @@ function Apply-Theme {
         $StatIcon4Bg.Background = $converter.ConvertFrom($colors['StatIcon4Bg'])
     } catch { }
 
-    # Walk visual tree and update all text and input elements
+    # ─── Visual tree walker ───
     function Update-ElementColors {
         param($element)
         if (-not $element) { return }
 
-        # Map known foreground colors (both dark and light theme values)
-        $primaryFgHexes = @('#FFFFFFFF', '#FF1A1A2E')
-        $secondaryFgHexes = @('#FF8892B0', '#FF5A6078')
-        # Map known background colors
-        $cardBgHexes = @('#FF1F2940', '#FFFFFFFF')
-        $bgSecondaryHexes = @('#FF16213E', '#FFF0F2F5')
-        $borderHexes = @('#FF2D3A5C', '#FFD0D4DC')
-        $toggleTrackHexes = @('#FF3D4663', '#FFC4C7D0')
+        $textPrimaryBrush = $converter.ConvertFrom($colors['TextPrimaryColor'])
+        $textSecondaryBrush = $converter.ConvertFrom($colors['TextSecondaryColor'])
+        $cardBrush = $converter.ConvertFrom($colors['CardColor'])
+        $bgSecBrush = $converter.ConvertFrom($colors['BgSecondaryColor'])
+        $borderBrush = $converter.ConvertFrom($colors['BorderColor'])
+        $toggleBrush = $converter.ConvertFrom($colors['ToggleTrack'])
 
-        # Update Foreground for TextBlocks
+        # TextBlock foreground
         if ($element -is [System.Windows.Controls.TextBlock]) {
             $fg = $element.Foreground
             if ($fg -is [System.Windows.Media.SolidColorBrush]) {
                 $hex = $fg.Color.ToString()
-                if ($primaryFgHexes -contains $hex) {
-                    $element.Foreground = $converter.ConvertFrom($colors['TextPrimaryColor'])
+                if ($script:AllPrimaryFgHexes -contains $hex) {
+                    $element.Foreground = $textPrimaryBrush
                 }
-                elseif ($secondaryFgHexes -contains $hex) {
-                    $element.Foreground = $converter.ConvertFrom($colors['TextSecondaryColor'])
+                elseif ($script:AllSecondaryFgHexes -contains $hex) {
+                    $element.Foreground = $textSecondaryBrush
                 }
             }
         }
 
-        # Update Foreground for Controls (buttons, labels)
-        if ($element -is [System.Windows.Controls.Control] -and $element -isnot [System.Windows.Controls.TextBox] -and $element -isnot [System.Windows.Controls.PasswordBox]) {
+        # Control foreground (buttons, labels, etc. — not textboxes)
+        if ($element -is [System.Windows.Controls.Control] -and
+            $element -isnot [System.Windows.Controls.TextBox] -and
+            $element -isnot [System.Windows.Controls.PasswordBox] -and
+            $element -isnot [System.Windows.Controls.ComboBox]) {
             try {
                 $fg = $element.Foreground
                 if ($fg -is [System.Windows.Media.SolidColorBrush]) {
                     $hex = $fg.Color.ToString()
-                    if ($primaryFgHexes -contains $hex) {
-                        $element.Foreground = $converter.ConvertFrom($colors['TextPrimaryColor'])
+                    if ($script:AllPrimaryFgHexes -contains $hex) {
+                        $element.Foreground = $textPrimaryBrush
                     }
-                    elseif ($secondaryFgHexes -contains $hex) {
-                        $element.Foreground = $converter.ConvertFrom($colors['TextSecondaryColor'])
+                    elseif ($script:AllSecondaryFgHexes -contains $hex) {
+                        $element.Foreground = $textSecondaryBrush
                     }
                 }
             } catch { }
         }
 
-        # Update Background for Borders (cards, sidebar, etc.)
+        # Border backgrounds and border brushes
         if ($element -is [System.Windows.Controls.Border]) {
             $bg = $element.Background
             if ($bg -is [System.Windows.Media.SolidColorBrush]) {
                 $hex = $bg.Color.ToString()
-                if ($cardBgHexes -contains $hex) {
-                    $element.Background = $converter.ConvertFrom($colors['CardColor'])
+                if ($script:AllCardBgHexes -contains $hex) {
+                    $element.Background = $cardBrush
                 }
-                elseif ($bgSecondaryHexes -contains $hex) {
-                    $element.Background = $converter.ConvertFrom($colors['BgSecondaryColor'])
+                elseif ($script:AllBgHexes -contains $hex) {
+                    $element.Background = $converter.ConvertFrom($colors['BgColor'])
                 }
-                elseif ($toggleTrackHexes -contains $hex) {
-                    $trackColor = if ($resolved -eq "Light") { "#C4C7D0" } else { "#3D4663" }
-                    $element.Background = $converter.ConvertFrom($trackColor)
+                elseif ($script:AllToggleTrackHexes -contains $hex) {
+                    $element.Background = $toggleBrush
                 }
             }
             $bb = $element.BorderBrush
             if ($bb -is [System.Windows.Media.SolidColorBrush]) {
                 $hex = $bb.Color.ToString()
-                if ($borderHexes -contains $hex) {
-                    $element.BorderBrush = $converter.ConvertFrom($colors['BorderColor'])
+                if ($script:AllBorderHexes -contains $hex) {
+                    $element.BorderBrush = $borderBrush
                 }
             }
         }
 
-        # Update TextBox/PasswordBox
+        # TextBox / PasswordBox
         if ($element -is [System.Windows.Controls.TextBox] -or $element -is [System.Windows.Controls.PasswordBox]) {
             try {
-                $element.Background = $converter.ConvertFrom($colors['BgSecondaryColor'])
-                $element.Foreground = $converter.ConvertFrom($colors['TextPrimaryColor'])
-                $element.BorderBrush = $converter.ConvertFrom($colors['BorderColor'])
+                $element.Background = $bgSecBrush
+                $element.Foreground = $textPrimaryBrush
+                $element.BorderBrush = $borderBrush
                 $element.CaretBrush = $converter.ConvertFrom($colors['CaretBrush'])
             } catch { }
         }
 
-        # Recurse into children
+        # ComboBox
+        if ($element -is [System.Windows.Controls.ComboBox]) {
+            try {
+                $element.Background = $bgSecBrush
+                $element.Foreground = $textPrimaryBrush
+                $element.BorderBrush = $borderBrush
+            } catch { }
+        }
+
+        # Recurse into visual children
         $childCount = [System.Windows.Media.VisualTreeHelper]::GetChildrenCount($element)
         for ($i = 0; $i -lt $childCount; $i++) {
             $child = [System.Windows.Media.VisualTreeHelper]::GetChild($element, $i)
@@ -2945,7 +3011,7 @@ function Apply-Theme {
     # Walk entire visual tree
     Update-ElementColors $window
 
-    # Refresh the current page data
+    # Refresh the current page to regenerate dynamic content with correct colors
     $currentPageIndex = -1
     for ($i = 0; $i -lt $script:Pages.Count; $i++) {
         if ($script:Pages[$i].Visibility -eq 'Visible') { $currentPageIndex = $i; break }
@@ -2985,6 +3051,8 @@ function Update-LimitsAppList {
 
         $border = New-Object System.Windows.Controls.Border
         $border.Background = $window.FindResource("BgSecondaryBrush")
+        $border.BorderBrush = $window.FindResource("BorderBrush")
+        $border.BorderThickness = [System.Windows.Thickness]::new(1)
         $border.CornerRadius = [System.Windows.CornerRadius]::new(6)
         $border.Padding = [System.Windows.Thickness]::new(12, 8, 12, 8)
         $border.Margin = [System.Windows.Thickness]::new(0, 0, 0, 4)
@@ -3051,6 +3119,8 @@ function Update-LimitsList {
 
             $border = New-Object System.Windows.Controls.Border
             $border.Background = $window.FindResource("BgSecondaryBrush")
+            $border.BorderBrush = $window.FindResource("BorderBrush")
+            $border.BorderThickness = [System.Windows.Thickness]::new(1)
             $border.CornerRadius = [System.Windows.CornerRadius]::new(8)
             $border.Padding = [System.Windows.Thickness]::new(16, 12, 16, 12)
             $border.Margin = [System.Windows.Thickness]::new(0, 0, 0, 6)
@@ -3412,6 +3482,8 @@ function Update-BlockedAppsList {
         foreach ($app in $script:ParentalConfig.BlockedApps) {
             $border = New-Object System.Windows.Controls.Border
             $border.Background = $window.FindResource("BgSecondaryBrush")
+            $border.BorderBrush = $window.FindResource("BorderBrush")
+            $border.BorderThickness = [System.Windows.Thickness]::new(1)
             $border.CornerRadius = [System.Windows.CornerRadius]::new(8)
             $border.Padding = [System.Windows.Thickness]::new(12, 8, 12, 8)
             $border.Margin = [System.Windows.Thickness]::new(0, 0, 0, 4)
@@ -3532,6 +3604,8 @@ $GenerateReportBtn.Add_Click({
 
         $dayBorder = New-Object System.Windows.Controls.Border
         $dayBorder.Background = $window.FindResource("BgSecondaryBrush")
+        $dayBorder.BorderBrush = $window.FindResource("BorderBrush")
+        $dayBorder.BorderThickness = [System.Windows.Thickness]::new(1)
         $dayBorder.CornerRadius = [System.Windows.CornerRadius]::new(8)
         $dayBorder.Padding = [System.Windows.Thickness]::new(12, 8, 12, 8)
         $dayBorder.Margin = [System.Windows.Thickness]::new(0, 0, 0, 6)
