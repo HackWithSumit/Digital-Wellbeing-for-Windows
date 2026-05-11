@@ -72,6 +72,14 @@ $script:StartupRegName = "DigitalWellbeing"
 $script:TrayIcon = $null
 
 function Get-StartupCommand {
+    # Detect if running as a compiled exe (PS2EXE, etc.)
+    $exePath = [System.Diagnostics.Process]::GetCurrentProcess().MainModule.FileName
+    $isExe = $exePath -and ($exePath -match '\.exe$') -and ($exePath -notmatch 'powershell|pwsh')
+
+    if ($isExe) {
+        return "`"$exePath`" -Background"
+    }
+
     $scriptPath = if ($PSCommandPath) { $PSCommandPath } elseif ($MyInvocation.ScriptName) { $MyInvocation.ScriptName } else { $script:MyInvocation.MyCommand.Path }
     if (-not $scriptPath) {
         $scriptPath = Join-Path $PSScriptRoot "DigitalWellbeing.ps1"
