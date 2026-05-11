@@ -941,7 +941,7 @@ function Get-AppIcon {
         <!-- Nav Button Active Style -->
         <Style x:Key="NavButtonActiveStyle" TargetType="Button" BasedOn="{StaticResource NavButtonStyle}">
             <Setter Property="Background" Value="{StaticResource PrimaryBrush}"/>
-            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+            <Setter Property="Foreground" Value="White"/>
         </Style>
 
         <!-- Card Style -->
@@ -1131,7 +1131,8 @@ function Get-AppIcon {
 
             <!-- Title Bar -->
             <Border Grid.Row="0" Background="{StaticResource BgSecondaryBrush}"
-                    CornerRadius="16,16,0,0" Name="TitleBar">
+                    CornerRadius="16,16,0,0" Name="TitleBar"
+                    BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1">
                 <Grid>
                     <StackPanel Orientation="Horizontal" Margin="16,0,0,0" VerticalAlignment="Center">
                         <TextBlock Text="&#xE909;" FontFamily="Segoe MDL2 Assets" FontSize="14"
@@ -1164,10 +1165,11 @@ function Get-AppIcon {
 
                 <!-- Sidebar Navigation -->
                 <Border Grid.Column="0" Background="{StaticResource BgSecondaryBrush}"
-                        CornerRadius="0,0,0,16" Padding="8,16">
+                        CornerRadius="0,0,0,16" Padding="8,16"
+                        BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,1,0">
                     <DockPanel>
                         <!-- User Profile Area -->
-                        <StackPanel DockPanel.Dock="Top" Margin="8,0,8,20">
+                        <StackPanel DockPanel.Dock="Top" Margin="8,0,8,0">
                             <Ellipse Width="56" Height="56" HorizontalAlignment="Center">
                                 <Ellipse.Fill>
                                     <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
@@ -1184,6 +1186,9 @@ function Get-AppIcon {
                             <TextBlock Name="ScreenTimeLabel" Text="0h 0m screen time today"
                                        FontSize="11" Foreground="{StaticResource TextSecondaryBrush}"
                                        HorizontalAlignment="Center"/>
+                            <!-- Separator -->
+                            <Border BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1"
+                                    Margin="0,16,0,16"/>
                         </StackPanel>
 
                         <!-- Nav Buttons -->
@@ -1221,8 +1226,11 @@ function Get-AppIcon {
                                 </StackPanel>
                             </Button>
 
+                            <!-- Separator -->
+                            <Border BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1"
+                                    Margin="4,12,4,12"/>
                             <TextBlock Text="SYSTEM" FontSize="10" Foreground="{StaticResource TextSecondaryBrush}"
-                                       FontFamily="Segoe UI Semibold" Margin="16,20,0,8"/>
+                                       FontFamily="Segoe UI Semibold" Margin="16,0,0,8"/>
                             <Button Name="NavSettings" Style="{StaticResource NavButtonStyle}">
                                 <StackPanel Orientation="Horizontal">
                                     <TextBlock Text="&#xE713;" FontFamily="Segoe MDL2 Assets" FontSize="15" Width="24" Margin="0,0,10,0"/>
@@ -1239,6 +1247,9 @@ function Get-AppIcon {
 
                         <!-- Tracking Status -->
                         <StackPanel DockPanel.Dock="Bottom" VerticalAlignment="Bottom" Margin="8,0">
+                            <!-- Separator -->
+                            <Border BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1"
+                                    Margin="0,0,0,12"/>
                             <Border Background="{StaticResource CardBrush}" CornerRadius="10" Padding="12,10"
                                     BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
                                 <StackPanel>
