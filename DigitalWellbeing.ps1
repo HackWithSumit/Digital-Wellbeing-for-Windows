@@ -1239,7 +1239,8 @@ function Get-AppIcon {
 
                         <!-- Tracking Status -->
                         <StackPanel DockPanel.Dock="Bottom" VerticalAlignment="Bottom" Margin="8,0">
-                            <Border Background="{StaticResource CardBrush}" CornerRadius="10" Padding="12,10">
+                            <Border Background="{StaticResource CardBrush}" CornerRadius="10" Padding="12,10"
+                                    BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
                                 <StackPanel>
                                     <StackPanel Orientation="Horizontal">
                                         <Ellipse Name="TrackingIndicator" Width="8" Height="8" Fill="{StaticResource SuccessBrush}" Margin="0,0,8,0"/>
@@ -1417,7 +1418,8 @@ function Get-AppIcon {
                                 </Grid>
 
                                 <!-- Apps Header -->
-                                <Border Background="{StaticResource BgSecondaryBrush}" CornerRadius="8,8,0,0" Padding="16,10">
+                                <Border Background="{StaticResource BgSecondaryBrush}" CornerRadius="8,8,0,0" Padding="16,10"
+                                        BorderBrush="{StaticResource BorderBrush}" BorderThickness="1,1,1,0">
                                     <Grid>
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="40"/>
@@ -1659,6 +1661,7 @@ function Get-AppIcon {
                                             <!-- Change PIN Section -->
                                             <Border Name="ChangePinSection" Margin="0,16,0,0" Padding="12"
                                                     Background="{StaticResource BgSecondaryBrush}" CornerRadius="8"
+                                                    BorderBrush="{StaticResource BorderBrush}" BorderThickness="1"
                                                     Visibility="Collapsed">
                                                 <StackPanel>
                                                     <TextBlock Text="Change PIN" FontSize="14" FontFamily="Segoe UI Semibold"
@@ -1792,36 +1795,45 @@ function Get-AppIcon {
                                     <StackPanel>
                                         <TextBlock Text="General" FontSize="16" FontFamily="Segoe UI Semibold"
                                                    Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,16"/>
-                                        <Grid Margin="0,0,0,12">
-                                            <StackPanel>
-                                                <TextBlock Text="Enable Tracking" FontSize="13"
-                                                           Foreground="{StaticResource TextPrimaryBrush}"/>
-                                                <TextBlock Text="Track application usage in the background"
-                                                           FontSize="11" Foreground="{StaticResource TextSecondaryBrush}"/>
-                                            </StackPanel>
-                                            <CheckBox Name="TrackingToggle" Style="{StaticResource ToggleSwitch}"
-                                                      HorizontalAlignment="Right" VerticalAlignment="Center"/>
-                                        </Grid>
-                                        <Grid Margin="0,0,0,12">
-                                            <StackPanel>
-                                                <TextBlock Text="Enable Notifications" FontSize="13"
-                                                           Foreground="{StaticResource TextPrimaryBrush}"/>
-                                                <TextBlock Text="Show alerts for time limits and reminders"
-                                                           FontSize="11" Foreground="{StaticResource TextSecondaryBrush}"/>
-                                            </StackPanel>
-                                            <CheckBox Name="NotificationsToggle" Style="{StaticResource ToggleSwitch}"
-                                                      HorizontalAlignment="Right" VerticalAlignment="Center"/>
-                                        </Grid>
-                                        <Grid Margin="0,0,0,12">
-                                            <StackPanel>
-                                                <TextBlock Text="Minimize to System Tray" FontSize="13"
-                                                           Foreground="{StaticResource TextPrimaryBrush}"/>
-                                                <TextBlock Text="Keep running in the background when closed"
-                                                           FontSize="11" Foreground="{StaticResource TextSecondaryBrush}"/>
-                                            </StackPanel>
-                                            <CheckBox Name="TrayToggle" Style="{StaticResource ToggleSwitch}"
-                                                      HorizontalAlignment="Right" VerticalAlignment="Center"/>
-                                        </Grid>
+                                        <Border BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1"
+                                                Padding="0,0,0,12" Margin="0,0,0,12">
+                                            <Grid>
+                                                <StackPanel>
+                                                    <TextBlock Text="Enable Tracking" FontSize="13"
+                                                               Foreground="{StaticResource TextPrimaryBrush}"/>
+                                                    <TextBlock Text="Track application usage in the background"
+                                                               FontSize="11" Foreground="{StaticResource TextSecondaryBrush}"/>
+                                                </StackPanel>
+                                                <CheckBox Name="TrackingToggle" Style="{StaticResource ToggleSwitch}"
+                                                          HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                            </Grid>
+                                        </Border>
+                                        <Border BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1"
+                                                Padding="0,0,0,12" Margin="0,0,0,12">
+                                            <Grid>
+                                                <StackPanel>
+                                                    <TextBlock Text="Enable Notifications" FontSize="13"
+                                                               Foreground="{StaticResource TextPrimaryBrush}"/>
+                                                    <TextBlock Text="Show alerts for time limits and reminders"
+                                                               FontSize="11" Foreground="{StaticResource TextSecondaryBrush}"/>
+                                                </StackPanel>
+                                                <CheckBox Name="NotificationsToggle" Style="{StaticResource ToggleSwitch}"
+                                                          HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                            </Grid>
+                                        </Border>
+                                        <Border BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1"
+                                                Padding="0,0,0,12" Margin="0,0,0,12">
+                                            <Grid>
+                                                <StackPanel>
+                                                    <TextBlock Text="Minimize to System Tray" FontSize="13"
+                                                               Foreground="{StaticResource TextPrimaryBrush}"/>
+                                                    <TextBlock Text="Keep running in the background when closed"
+                                                               FontSize="11" Foreground="{StaticResource TextSecondaryBrush}"/>
+                                                </StackPanel>
+                                                <CheckBox Name="TrayToggle" Style="{StaticResource ToggleSwitch}"
+                                                          HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                            </Grid>
+                                        </Border>
                                         <Grid Margin="0,0,0,12">
                                             <StackPanel>
                                                 <TextBlock Text="Start with Windows" FontSize="13"
@@ -1907,24 +1919,34 @@ function Get-AppIcon {
                                                    FontSize="13" Foreground="{StaticResource TextSecondaryBrush}"
                                                    TextWrapping="Wrap" TextAlignment="Center" Margin="0,0,0,16"/>
 
-                                        <TextBlock Text="Features" FontSize="15" FontFamily="Segoe UI Semibold"
-                                                   Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,8"/>
-                                        <TextBlock FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" Margin="0,0,0,16">
-                                            <Run Text="&#x2022; Real-time application usage tracking"/><LineBreak/>
-                                            <Run Text="&#x2022; Screen time monitoring with charts"/><LineBreak/>
-                                            <Run Text="&#x2022; Per-app time limits with notifications"/><LineBreak/>
-                                            <Run Text="&#x2022; Parental controls with PIN protection"/><LineBreak/>
-                                            <Run Text="&#x2022; App blocking and bedtime schedules"/><LineBreak/>
-                                            <Run Text="&#x2022; Weekly usage reports"/><LineBreak/>
-                                            <Run Text="&#x2022; Data export functionality"/>
-                                        </TextBlock>
+                                        <Border BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1"
+                                                Padding="0,0,0,12" Margin="0,0,0,12">
+                                            <StackPanel>
+                                                <TextBlock Text="Features" FontSize="15" FontFamily="Segoe UI Semibold"
+                                                           Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,8"/>
+                                                <TextBlock FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap">
+                                                    <Run Text="&#x2022; Real-time application usage tracking"/><LineBreak/>
+                                                    <Run Text="&#x2022; Screen time monitoring with charts"/><LineBreak/>
+                                                    <Run Text="&#x2022; Per-app time limits with notifications"/><LineBreak/>
+                                                    <Run Text="&#x2022; Parental controls with PIN protection"/><LineBreak/>
+                                                    <Run Text="&#x2022; App blocking and bedtime schedules"/><LineBreak/>
+                                                    <Run Text="&#x2022; Weekly usage reports"/><LineBreak/>
+                                                    <Run Text="&#x2022; Data export functionality"/>
+                                                </TextBlock>
+                                            </StackPanel>
+                                        </Border>
 
-                                        <TextBlock Text="Author" FontSize="15" FontFamily="Segoe UI Semibold"
-                                                   Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,8"/>
-                                        <TextBlock Text="Created by Sumit (HackWithSumit)" FontSize="12"
-                                                   Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,4"/>
-                                        <TextBlock Text="github.com/HackWithSumit" FontSize="12"
-                                                   Foreground="{StaticResource PrimaryBrush}" Margin="0,0,0,16"/>
+                                        <Border BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1"
+                                                Padding="0,0,0,12" Margin="0,0,0,12">
+                                            <StackPanel>
+                                                <TextBlock Text="Author" FontSize="15" FontFamily="Segoe UI Semibold"
+                                                           Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,8"/>
+                                                <TextBlock Text="Created by Sumit (HackWithSumit)" FontSize="12"
+                                                           Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,4"/>
+                                                <TextBlock Text="github.com/HackWithSumit" FontSize="12"
+                                                           Foreground="{StaticResource PrimaryBrush}"/>
+                                            </StackPanel>
+                                        </Border>
 
                                         <TextBlock Text="License" FontSize="15" FontFamily="Segoe UI Semibold"
                                                    Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,8"/>
@@ -2090,6 +2112,9 @@ function Update-Dashboard {
     foreach ($app in $sortedApps) {
         $appBorder = New-Object System.Windows.Controls.Border
         $appBorder.Margin = [System.Windows.Thickness]::new(0, 0, 0, 8)
+        $appBorder.BorderBrush = $window.FindResource("BorderBrush")
+        $appBorder.BorderThickness = [System.Windows.Thickness]::new(0, 0, 0, 1)
+        $appBorder.Padding = [System.Windows.Thickness]::new(0, 0, 0, 8)
 
         $grid = New-Object System.Windows.Controls.Grid
         $col1 = New-Object System.Windows.Controls.ColumnDefinition
