@@ -91,9 +91,8 @@ Digital Wellbeing is a high-quality WPF-based desktop application designed to he
 ## ⚡ Startup & Background Support
 
 * Auto-start with Windows
-* Silent background execution
 * System tray integration
-* Hidden startup launcher support
+* startup launcher support
 * Lightweight performance impact
 
 ## 🛡️ Privacy & Security
@@ -106,8 +105,7 @@ Digital Wellbeing is a high-quality WPF-based desktop application designed to he
 
 ## 🧩 Compatibility
 
-* Supports Windows 7 SP1
-* Supports Windows 8 / 8.1
+
 * Supports Windows 10
 * Supports Windows 11
 * Compatible with both 32-bit and 64-bit systems
