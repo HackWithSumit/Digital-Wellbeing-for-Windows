@@ -131,7 +131,7 @@ Digital Wellbeing is a high-quality WPF-based desktop application designed to he
 | UI Style         | Material Design Inspired                  |
 | License          | MIT License                               |
 | Version          | 2.2.0                                     |
-| Developer        | Sumit Ghosh (HackWithSumit / Cybersertex) |
+| Developer        | Sumit Ghosh (Cybersertex) |
 
 ---
 
@@ -173,5 +173,4 @@ Digital Wellbeing is a high-quality WPF-based desktop application designed to he
 
 **Sumit Ghosh**
 CEO of Cybersertex
-GitHub: github.com/HackWithSumit
 
